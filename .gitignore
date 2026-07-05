@@ -27,3 +27,11 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+
+AGENTS.md
+opencode.json
+/.agents
+/openspec/changes
+
+#/docs
