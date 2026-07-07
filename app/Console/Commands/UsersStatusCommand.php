@@ -21,6 +21,7 @@ class UsersStatusCommand extends Command
 
         if (! $user) {
             $this->error("User with email '{$email}' not found.");
+
             return Command::FAILURE;
         }
 
@@ -33,6 +34,7 @@ class UsersStatusCommand extends Command
 
         if ($status === null) {
             $this->error("Invalid status '{$statusInput}'. Valid values: Active, Inactive, Suspended.");
+
             return Command::FAILURE;
         }
 

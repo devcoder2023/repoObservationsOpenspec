@@ -8,4 +8,12 @@ Route::middleware(['auth', 'verified', 'user.status'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
 
+Route::middleware(['auth', 'verified', 'user.status', 'permission:observations.view'])->prefix('observations')->name('observations.')->group(function () {
+    // Observation routes will be added here in a future change
+});
+
+Route::middleware(['auth', 'verified', 'user.status', 'role:System Administrator'])->prefix('admin')->name('admin.')->group(function () {
+    // Master data routes (users, projects, locations, categories) will be added here
+});
+
 require __DIR__.'/settings.php';
