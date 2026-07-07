@@ -53,11 +53,13 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   ├── Actions/Fortify/          # Fortify action classes (CreateNewUser, ResetUserPassword)
 │   ├── Concerns/                 # Shared traits (PasswordValidationRules, ProfileValidationRules)
 │   ├── Console/                  # Artisan commands (empty)
+│   ├── Enums/
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Controller.php    # Base controller
 │   │   │   └── Settings/         # Settings controllers (Profile, Security)
 │   │   ├── Middleware/           # HandleAppearance, HandleInertiaRequests
+│   │   ├── Responses/
 │   │   └── Requests/Settings/    # Form requests (PasswordUpdate, ProfileDelete, ProfileUpdate, TwoFactorAuth)
 │   ├── Models/                   # User model (only model)
 │   └── Providers/                # AppServiceProvider, FortifyServiceProvider
@@ -113,6 +115,7 @@ A web application for creating, managing, and reviewing image-based safety obser
 - **Password rules:** Minimum 12 characters with mixed case, letters, numbers, symbols, and uncompromised check (production); no constraints in development
 - **Verification:** Email verification is required for certain routes (e.g., profile deletion, security settings)
 - **Session-based:** Authentication uses the `web` guard with database session driver
+- **Redirection:** Post-register redirects to `/login`
 - **Redirection:** Post-login redirects to `/dashboard`
 
 ## Database Structure (High-Level)
@@ -121,7 +124,7 @@ Only **default Laravel tables** exist (no custom domain tables):
 
 | Table | Purpose |
 |---|---|
-| `users` | User accounts (id, name, email, password, 2FA fields, timestamps) |
+| `users` | User accounts (id, name, email, password, 2FA fields, timestamps, status) |
 | `password_reset_tokens` | Password reset tokens |
 | `sessions` | User sessions |
 | `cache` | Cache store |
@@ -130,7 +133,7 @@ Only **default Laravel tables** exist (no custom domain tables):
 | `job_batches` | Batch job tracking |
 | `failed_jobs` | Failed job records |
 
-The `users` table has basic fields: `id`, `name`, `email`, `email_verified_at`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `remember_token`, `timestamps`.
+The `users` table has basic fields: `id`, `name`, `email`, `email_verified_at`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `remember_token`, `timestamps`, and added field `status`.
 
 ## Existing Features and Modules
 

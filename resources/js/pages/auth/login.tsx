@@ -13,10 +13,11 @@ import { request } from '@/routes/password';
 
 type Props = {
     status?: string;
+    error?: string;
     canResetPassword: boolean;
 };
 
-export default function Login({ status, canResetPassword }: Props) {
+export default function Login({ status, error, canResetPassword }: Props) {
     return (
         <>
             <Head title="Log in" />
@@ -102,6 +103,11 @@ export default function Login({ status, canResetPassword }: Props) {
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
                     {status}
+                </div>
+            )}
+            {error && (
+                <div className="mb-4 text-center text-sm font-medium text-red-600">
+                    {error}
                 </div>
             )}
         </>
