@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BookOpen, FolderGit2, LayoutGrid, Users, FolderKanban, MapPin, Tags, Shield } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -14,13 +14,41 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+import type { Auth, NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+];
+
+const adminNavItems: NavItem[] = [
+    {
+        title: 'Admin Dashboard',
+        href: '/admin',
+        icon: Shield,
+    },
+    {
+        title: 'Users',
+        href: '/admin/users',
+        icon: Users,
+    },
+    {
+        title: 'Projects',
+        href: '/admin/projects',
+        icon: FolderKanban,
+    },
+    {
+        title: 'Locations',
+        href: '/admin/locations',
+        icon: MapPin,
+    },
+    {
+        title: 'Categories',
+        href: '/admin/categories',
+        icon: Tags,
     },
 ];
 
@@ -38,6 +66,9 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const isAdmin = auth.permissions.includes('users.view');
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -54,6 +85,10 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+
+                {isAdmin && (
+                    <NavMain items={adminNavItems} label="Administration" />
+                )}
             </SidebarContent>
 
             <SidebarFooter>
