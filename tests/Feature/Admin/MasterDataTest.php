@@ -2,8 +2,8 @@
 
 use App\Enums\Role as RoleEnum;
 use App\Models\ObservationCategory;
-use App\Models\Site;
 use App\Models\Project;
+use App\Models\Site;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 

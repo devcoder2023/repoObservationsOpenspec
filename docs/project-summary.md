@@ -81,8 +81,8 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   │       └── Settings/         # Form requests (PasswordUpdate, ProfileDelete, etc.)
 │   ├── Models/
 │   │   ├── User.php              # With HasRoles trait, UserStatus cast
-│   │   ├── Project.php           # SoftDeletes, fillable name
-│   │   ├── Site.php          # SoftDeletes, fillable name
+│   │   ├── Project.php           # SoftDeletes, fillable name, hasMany sites
+│   │   ├── Site.php              # SoftDeletes, fillable name+project_id, belongsTo project
 │   │   └── ObservationCategory.php # SoftDeletes, fillable name
 │   └── Providers/
 │       ├── AppServiceProvider
@@ -206,6 +206,7 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 | `model_has_permissions` | Direct user-permission assignments (unused — roles only) |
 | `projects` | Project master data (name, soft deletes, timestamps) |
 | `locations` | Site master data (name, soft deletes, timestamps) — renamed to `sites` |
+| `sites` | Site master data (name, `project_id` FK to projects, soft deletes, timestamps) |
 | `observation_categories` | Observation category master data (name, soft deletes, timestamps) |
 
 ## Existing Features and Modules
@@ -259,8 +260,8 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 - Self-deletion protection: cannot delete own account
 
 ### Master Data (fully implemented)
-- **Projects** — full CRUD with soft deletes and restore
-- **Sites** — full CRUD with soft deletes and restore
+- **Projects** — full CRUD with soft deletes and restore; cascade soft-deletes all associated sites
+- **Sites** — full CRUD with soft deletes and restore; belongs to a project via `project_id` foreign key; list view shows associated project name; create/edit forms include a project selection dropdown with required validation
 - **Observation Categories** — full CRUD with soft deletes and restore
 - Unique name validation per entity type (ignoring current record on edit)
 - Soft-deleted records excluded from list views and selects

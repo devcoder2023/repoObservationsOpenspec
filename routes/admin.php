@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ObservationCategoryController;
-use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 

@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Requests\Admin\StoreObservationCategoryRequest;
-use App\Http\Requests\Admin\StoreSiteRequest;
 use App\Http\Requests\Admin\StoreProjectRequest;
+use App\Http\Requests\Admin\StoreSiteRequest;
 use App\Http\Requests\Admin\StoreUserRequest;
 
 it('has proper validation rules for store user request', function () {

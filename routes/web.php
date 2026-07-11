@@ -16,5 +16,4 @@ Route::middleware(['auth', 'verified', 'user.status', 'permission:observations.v
     // Observation routes will be added here in a future change
 });
 
-
 require __DIR__.'/settings.php';

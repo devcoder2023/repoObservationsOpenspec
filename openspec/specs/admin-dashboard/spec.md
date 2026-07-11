@@ -111,7 +111,7 @@ Manage core reference data entities — projects, locations, and observation cat
 
 ### Requirement: List master data entities
 
-The system SHALL provide paginated list views for projects (`/admin/projects`), sites (`/admin/sites`), and observation categories (`/admin/categories`). Each list SHALL display the entity name and a created-at timestamp.
+The system SHALL provide paginated list views for projects (`/admin/projects`), sites (`/admin/sites`), and observation categories (`/admin/categories`). Each list SHALL display the entity name and a created-at timestamp. The site list SHALL additionally display the associated project name.
 
 #### Scenario: Admin views project list
 - **WHEN** a System Administrator navigates to `/admin/projects`
@@ -119,7 +119,7 @@ The system SHALL provide paginated list views for projects (`/admin/projects`), 
 
 #### Scenario: Admin views site list
 - **WHEN** a System Administrator navigates to `/admin/sites`
-- **THEN** the system displays a table of all sites with name and created date
+- **THEN** the system displays a table of all sites with name, associated project name, and created date
 
 #### Scenario: Admin views category list
 - **WHEN** a System Administrator navigates to `/admin/categories`
@@ -127,15 +127,19 @@ The system SHALL provide paginated list views for projects (`/admin/projects`), 
 
 ### Requirement: Create master data entity
 
-The system SHALL provide creation forms for projects, sites, and observation categories. Each form SHALL require a name field (unique per entity type). On success, the system SHALL redirect to the corresponding list view with a success message.
+The system SHALL provide creation forms for projects, sites, and observation categories. Each form SHALL require a name field (unique per entity type). The site creation form SHALL additionally require selecting a project from a list of available projects. On success, the system SHALL redirect to the corresponding list view with a success message.
 
 #### Scenario: Admin creates a project
 - **WHEN** a System Administrator submits a valid project name
 - **THEN** the system creates the project and redirects to the project list with a success message
 
 #### Scenario: Admin creates a site
-- **WHEN** a System Administrator submits a valid site name
-- **THEN** the system creates the site and redirects to the site list with a success message
+- **WHEN** a System Administrator submits a valid site name and selects a project
+- **THEN** the system creates the site linked to the selected project and redirects to the site list with a success message
+
+#### Scenario: Admin creates a site without selecting a project
+- **WHEN** a System Administrator submits a site creation form without selecting a project
+- **THEN** the system displays a validation error and does not create the site
 
 #### Scenario: Admin creates a observation category
 - **WHEN** a System Administrator submits a valid category name
@@ -147,14 +151,14 @@ The system SHALL provide creation forms for projects, sites, and observation cat
 
 ### Requirement: Edit master data entity
 
-The system SHALL provide edit forms for projects, sites, and observation categories. The form SHALL allow changing the name. The name SHALL remain unique, excluding the current record.
+The system SHALL provide edit forms for projects, sites, and observation categories. The site edit form SHALL display the currently associated project and allow changing it. The name SHALL remain unique, excluding the current record.
 
 #### Scenario: Admin edits a project name
 - **WHEN** a System Administrator updates a project's name to a new unique value
 - **THEN** the system updates the project and redirects to the project list with a success message
 
-#### Scenario: Admin edits a site name
-- **WHEN** a System Administrator updates a site's name to a new unique value
+#### Scenario: Admin edits a site name and project
+- **WHEN** a System Administrator updates a site's name or changes its project association
 - **THEN** the system updates the site and redirects to the site list with a success message
 
 #### Scenario: Admin edits a category name
@@ -163,12 +167,12 @@ The system SHALL provide edit forms for projects, sites, and observation categor
 
 ### Requirement: Delete master data entity
 
-The system SHALL provide soft-delete for projects, sites, and observation categories. Deleted records SHALL be excluded from list views and select inputs. The system SHALL provide a restore action.
+The system SHALL provide soft-delete for projects, sites, and observation categories. Deleting a project SHALL cascade-soft-delete all associated sites. Deleted records SHALL be excluded from list views and select inputs. The system SHALL provide a restore action for each entity.
 
-#### Scenario: Admin soft-deletes a project
-- **WHEN** a System Administrator deletes a project
-- **THEN** the system soft-deletes the project and it no longer appears in the project list
+#### Scenario: Admin soft-deletes a project with associated sites
+- **WHEN** a System Administrator deletes a project that has associated sites
+- **THEN** the system soft-deletes the project and all its associated sites
 
 #### Scenario: Admin restores a soft-deleted project
 - **WHEN** a System Administrator restores a soft-deleted project
-- **THEN** the system restores the project and it reappears in the project list
+- **THEN** the system restores the project and its associated sites

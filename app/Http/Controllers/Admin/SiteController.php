@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreSiteRequest;
 use App\Http\Requests\Admin\UpdateSiteRequest;
+use App\Models\Project;
 use App\Models\Site;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -14,7 +15,7 @@ class SiteController extends Controller
 {
     public function index(): Response
     {
-        $sites = Site::orderBy('created_at', 'desc')->paginate(20);
+        $sites = Site::with('project')->orderBy('created_at', 'desc')->paginate(20);
 
         return Inertia::render('admin/sites/index', [
             'sites' => $sites,
@@ -23,7 +24,9 @@ class SiteController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('admin/sites/create');
+        return Inertia::render('admin/sites/create', [
+            'projects' => Project::orderBy('name')->get(),
+        ]);
     }
 
     public function store(StoreSiteRequest $request): RedirectResponse
@@ -37,8 +40,11 @@ class SiteController extends Controller
 
     public function edit(Site $site): Response
     {
+        $site->load('project');
+
         return Inertia::render('admin/sites/edit', [
             'site' => $site,
+            'projects' => Project::orderBy('name')->get(),
         ]);
     }
 

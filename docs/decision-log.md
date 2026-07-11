@@ -51,3 +51,15 @@
 - Consolidated the three RBAC delta specs into a single canonical `openspec/specs/rbac/spec.md` to improve maintainability.
 - Merged the user-account-status delta spec into `openspec/specs/auth/spec.md` as both relate to authentication concerns.
 - Model specifications by business capability rather than technical components.
+
+## 2026-07-11 — Link Sites to Projects
+
+**Context:** Sites and projects were independent master data entities with no relationship. Site management forms only collected a name, and database data was empty.
+
+**Decisions:**
+- Add `project_id` foreign key to the `sites` table with `cascadeOnDelete` — when a project is deleted, all its sites are soft-deleted to avoid orphaned records.
+- Use `constrained()` for referential integrity rather than raw column and manual index.
+- Validate `project_id` as required in both `StoreSiteRequest` and `UpdateSiteRequest` using `exists:projects,id`.
+- Load project relationship eagerly (`->with('project')`) on site index queries to avoid N+1.
+- Expose full projects list in site create/edit views so the admin can select from active projects.
+- Seed sample data with 3 projects × 2 sites each to demonstrate the relationship.

@@ -11,6 +11,7 @@ class UpdateSiteRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255', Rule::unique('sites')->ignore($this->route('site'))],
+            'project_id' => ['required', 'integer', 'exists:projects,id'],
         ];
     }
 }

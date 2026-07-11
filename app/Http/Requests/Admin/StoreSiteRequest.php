@@ -10,6 +10,7 @@ class StoreSiteRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255', 'unique:sites,name'],
+            'project_id' => ['required', 'integer', 'exists:projects,id'],
         ];
     }
 }

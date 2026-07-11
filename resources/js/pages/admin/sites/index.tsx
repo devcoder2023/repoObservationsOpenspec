@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 type Site = {
     id: number;
     name: string;
+    project: { id: number; name: string } | null;
     created_at: string;
     deleted_at: string | null;
 };
@@ -51,6 +52,7 @@ export default function SiteIndex({ sites }: { sites: PaginatedSites }) {
                     <thead>
                         <tr className="border-b border-sidebar-border/70 text-left dark:border-sidebar-border">
                             <th className="px-4 py-3 font-medium">Name</th>
+                            <th className="px-4 py-3 font-medium">Project</th>
                             <th className="px-4 py-3 font-medium">Created</th>
                             <th className="px-4 py-3 font-medium">Status</th>
                             <th className="px-4 py-3 font-medium">Actions</th>
@@ -60,6 +62,9 @@ export default function SiteIndex({ sites }: { sites: PaginatedSites }) {
                         {sites.data.map((site) => (
                             <tr key={site.id} className="border-b border-sidebar-border/70 last:border-0 dark:border-sidebar-border">
                                 <td className="px-4 py-3">{site.name}</td>
+                                <td className="px-4 py-3 text-muted-foreground">
+                                    {site.project?.name ?? '—'}
+                                </td>
                                 <td className="px-4 py-3 text-muted-foreground">
                                     {new Date(site.created_at).toLocaleDateString()}
                                 </td>
@@ -94,7 +99,7 @@ export default function SiteIndex({ sites }: { sites: PaginatedSites }) {
                         ))}
                         {sites.data.length === 0 && (
                             <tr>
-                                <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                                     No sites found.
                                 </td>
                             </tr>
