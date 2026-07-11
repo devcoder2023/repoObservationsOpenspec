@@ -14,7 +14,7 @@ The `User` model SHALL use Spatie's `HasRoles` trait to enable role and permissi
 - **THEN** the user SHALL inherit all permissions associated with that role
 
 ### Requirement: Authorization middleware on routes
-Routes that manage system master data (users, projects, locations, categories) SHALL be protected by permission middleware allowing only users with the corresponding permissions.
+Routes that manage system master data (users, projects, sites, categories) SHALL be protected by permission middleware allowing only users with the corresponding permissions.
 
 #### Scenario: Master data routes protected
 - **WHEN** an unauthenticated or unauthorized user requests a master data route
@@ -68,7 +68,7 @@ The system SHALL define exactly 5 roles: `System Administrator`, `General Manage
 - **THEN** all 5 roles SHALL exist in the `roles` table
 
 ### Requirement: System Administrator has all permissions
-The `System Administrator` role SHALL have every permission (`users.*`, `projects.*`, `locations.*`, `categories.*`, `observations.*`).
+The `System Administrator` role SHALL have every permission (`users.*`, `projects.*`, `sites.*`, `categories.*`, `observations.*`).
 
 #### Scenario: System Administrator full access
 - **WHEN** a user has the `System Administrator` role
@@ -123,7 +123,7 @@ The `Observer` role's `observations.update` and `observations.delete` permission
 The resources `users`, `projects`, `locations`, and `categories` SHALL be considered system master data. Only the `System Administrator` role SHALL have create, update, or delete permissions on these resources.
 
 #### Scenario: Master data protection
-- **WHEN** a user without the `System Administrator` role attempts to create, update, or delete a user, project, location, or category
+- **WHEN** a user without the `System Administrator` role attempts to create, update, or delete a user, project, site, or category
 - **THEN** the system SHALL deny the operation
 
 ### Requirement: Role seeding is idempotent
@@ -158,7 +158,7 @@ Define all system permissions using a consistent naming convention, ensure they 
 
 ### Requirement: Permission naming convention
 All permissions SHALL follow the `resource.action` naming convention using lowercase singular.
-Valid resources: `users`, `projects`, `locations`, `categories`, `observations`.
+Valid resources: `users`, `projects`, `sites`, `categories`, `observations`.
 Valid actions: `view`, `create`, `update`, `delete`.
 
 #### Scenario: Permission name format
@@ -170,7 +170,7 @@ The system SHALL define exactly 20 permissions covering 5 resources with 4 actio
 
 #### Scenario: All permissions exist after seeding
 - **WHEN** the role and permission seeder runs
-- **THEN** the following permissions SHALL exist in the database: `users.view`, `users.create`, `users.update`, `users.delete`, `projects.view`, `projects.create`, `projects.update`, `projects.delete`, `locations.view`, `locations.create`, `locations.update`, `locations.delete`, `categories.view`, `categories.create`, `categories.update`, `categories.delete`, `observations.view`, `observations.create`, `observations.update`, `observations.delete`
+- **THEN** the following permissions SHALL exist in the database: `users.view`, `users.create`, `users.update`, `users.delete`, `projects.view`, `projects.create`, `projects.update`, `projects.delete`, `sites.view`, `sites.create`, `sites.update`, `sites.delete`, `categories.view`, `categories.create`, `categories.update`, `categories.delete`, `observations.view`, `observations.create`, `observations.update`, `observations.delete`
 
 ### Requirement: Permission seeding is idempotent
 Running the seeder multiple times SHALL NOT create duplicate permissions.

@@ -44,7 +44,7 @@ test('admin dashboard shows summary counts', function () {
         ->has('stats', fn ($stats) => $stats
             ->where('users', 1)
             ->where('projects', 0)
-            ->where('locations', 0)
+            ->where('sites', 0)
             ->where('categories', 0)
         )
     );

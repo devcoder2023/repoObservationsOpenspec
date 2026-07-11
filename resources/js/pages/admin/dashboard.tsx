@@ -9,11 +9,11 @@ type StatCard = {
     icon: typeof LayoutGrid;
 };
 
-export default function AdminDashboard({ stats }: { stats: { users: number; projects: number; locations: number; categories: number } }) {
+export default function AdminDashboard({ stats }: { stats: { users: number; projects: number; sites: number; categories: number } }) {
     const cards: StatCard[] = [
         { label: 'Users', count: stats.users, href: '/admin/users', icon: Users },
         { label: 'Projects', count: stats.projects, href: '/admin/projects', icon: FolderKanban },
-        { label: 'Locations', count: stats.locations, href: '/admin/locations', icon: MapPin },
+        { label: 'Sites', count: stats.sites, href: '/admin/sites', icon: MapPin },
         { label: 'Categories', count: stats.categories, href: '/admin/categories', icon: Tags },
     ];
 
@@ -21,7 +21,7 @@ export default function AdminDashboard({ stats }: { stats: { users: number; proj
         <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <Head title="Admin Dashboard" />
 
-            <Heading title="Admin Dashboard" description="Manage users, projects, locations, and categories" />
+            <Heading title="Admin Dashboard" description="Manage users, projects, sites, and categories" />
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {cards.map((card) => (

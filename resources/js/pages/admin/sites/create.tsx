@@ -1,4 +1,4 @@
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -6,30 +6,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export default function EditLocation({ location }: { location: { id: number; name: string } }) {
-    const { data, setData, patch, processing, errors } = useForm({ name: location.name });
+export default function CreateSite() {
+    const { data, setData, post, processing, errors } = useForm({ name: '' });
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        patch(`/admin/locations/${location.id}`);
-    };
-
-    const handleDelete = () => {
-        if (confirm('Are you sure you want to delete this location?')) {
-            router.delete(`/admin/locations/${location.id}`);
-        }
+        post('/admin/sites');
     };
 
     return (
         <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-            <Head title="Edit Location" />
+            <Head title="Create Site" />
 
             <div className="mb-6">
-                <Link href="/admin/locations" className="mb-4 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                <Link href="/admin/sites" className="mb-4 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
                     <ArrowLeft className="size-4" />
-                    Back to Locations
+                    Back to Sites
                 </Link>
-                <Heading title="Edit Location" description={`Editing ${location.name}`} />
+                <Heading title="Create Site" description="Add a new site" />
             </div>
 
             <form onSubmit={submit} className="max-w-lg space-y-6">
@@ -40,9 +34,8 @@ export default function EditLocation({ location }: { location: { id: number; nam
                 </div>
 
                 <div className="flex gap-4">
-                    <Button type="submit" disabled={processing}>Update Location</Button>
-                    <Button type="button" variant="destructive" onClick={handleDelete}>Delete Location</Button>
-                    <Link href="/admin/locations">
+                    <Button type="submit" disabled={processing}>Create Site</Button>
+                    <Link href="/admin/sites">
                         <Button type="button" variant="outline">Cancel</Button>
                     </Link>
                 </div>
@@ -51,10 +44,10 @@ export default function EditLocation({ location }: { location: { id: number; nam
     );
 }
 
-EditLocation.layout = {
+CreateSite.layout = {
     breadcrumbs: [
         { title: 'Admin Dashboard', href: '/admin' },
-        { title: 'Locations', href: '/admin/locations' },
-        { title: 'Edit', href: '/admin/locations/0/edit' },
+        { title: 'Sites', href: '/admin/sites' },
+        { title: 'Create', href: '/admin/sites/create' },
     ],
 };

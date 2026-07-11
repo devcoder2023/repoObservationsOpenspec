@@ -1,8 +1,8 @@
 <?php
 
 use App\Enums\Role as RoleEnum;
-use App\Models\Location;
 use App\Models\ObservationCategory;
+use App\Models\Site;
 use App\Models\Project;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
@@ -67,52 +67,52 @@ test('admin can restore a project', function () {
     $this->assertNotSoftDeleted($project);
 });
 
-// Locations
+// Sites
 
-test('admin can list locations', function () {
-    $response = $this->actingAs(admin())->get('/admin/locations');
+test('admin can list sites', function () {
+    $response = $this->actingAs(admin())->get('/admin/sites');
 
     $response->assertOk();
-    $response->assertInertia(fn ($page) => $page->component('admin/locations/index'));
+    $response->assertInertia(fn ($page) => $page->component('admin/sites/index'));
 });
 
-test('admin can create a location', function () {
-    $response = $this->actingAs(admin())->post('/admin/locations', [
-        'name' => 'Test Location',
+test('admin can create a site', function () {
+    $response = $this->actingAs(admin())->post('/admin/sites', [
+        'name' => 'Test Site',
     ]);
 
-    $response->assertRedirect('/admin/locations');
-    $this->assertDatabaseHas('locations', ['name' => 'Test Location']);
+    $response->assertRedirect('/admin/sites');
+    $this->assertDatabaseHas('sites', ['name' => 'Test Site']);
 });
 
-test('admin can edit a location', function () {
-    $location = Location::create(['name' => 'Original']);
+test('admin can edit a site', function () {
+    $site = Site::create(['name' => 'Original']);
 
-    $response = $this->actingAs(admin())->patch("/admin/locations/{$location->id}", [
+    $response = $this->actingAs(admin())->patch("/admin/sites/{$site->id}", [
         'name' => 'Updated',
     ]);
 
-    $response->assertRedirect('/admin/locations');
-    $this->assertDatabaseHas('locations', ['id' => $location->id, 'name' => 'Updated']);
+    $response->assertRedirect('/admin/sites');
+    $this->assertDatabaseHas('sites', ['id' => $site->id, 'name' => 'Updated']);
 });
 
-test('admin can soft-delete a location', function () {
-    $location = Location::create(['name' => 'To Delete']);
+test('admin can soft-delete a site', function () {
+    $site = Site::create(['name' => 'To Delete']);
 
-    $response = $this->actingAs(admin())->delete("/admin/locations/{$location->id}");
+    $response = $this->actingAs(admin())->delete("/admin/sites/{$site->id}");
 
-    $response->assertRedirect('/admin/locations');
-    $this->assertSoftDeleted($location);
+    $response->assertRedirect('/admin/sites');
+    $this->assertSoftDeleted($site);
 });
 
-test('admin can restore a location', function () {
-    $location = Location::create(['name' => 'To Restore']);
-    $location->delete();
+test('admin can restore a site', function () {
+    $site = Site::create(['name' => 'To Restore']);
+    $site->delete();
 
-    $response = $this->actingAs(admin())->patch("/admin/locations/{$location->id}/restore");
+    $response = $this->actingAs(admin())->patch("/admin/sites/{$site->id}/restore");
 
-    $response->assertRedirect('/admin/locations');
-    $this->assertNotSoftDeleted($location);
+    $response->assertRedirect('/admin/sites');
+    $this->assertNotSoftDeleted($site);
 });
 
 // Observation Categories
@@ -168,6 +168,6 @@ test('non-admin cannot access master data routes', function () {
     $user->assignRole(RoleEnum::Observer->value);
 
     $this->actingAs($user)->get('/admin/projects')->assertForbidden();
-    $this->actingAs($user)->get('/admin/locations')->assertForbidden();
+    $this->actingAs($user)->get('/admin/sites')->assertForbidden();
     $this->actingAs($user)->get('/admin/categories')->assertForbidden();
 });

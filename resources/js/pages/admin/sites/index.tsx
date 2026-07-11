@@ -4,15 +4,15 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-type Location = {
+type Site = {
     id: number;
     name: string;
     created_at: string;
     deleted_at: string | null;
 };
 
-type PaginatedLocations = {
-    data: Location[];
+type PaginatedSites = {
+    data: Site[];
     current_page: number;
     last_page: number;
     from: number;
@@ -21,27 +21,27 @@ type PaginatedLocations = {
     links: { url: string | null; label: string; active: boolean }[];
 };
 
-export default function LocationIndex({ locations }: { locations: PaginatedLocations }) {
+export default function SiteIndex({ sites }: { sites: PaginatedSites }) {
     const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this location?')) {
-            router.delete(`/admin/locations/${id}`);
+        if (confirm('Are you sure you want to delete this site?')) {
+            router.delete(`/admin/sites/${id}`);
         }
     };
 
     const handleRestore = (id: number) => {
-        router.patch(`/admin/locations/${id}/restore`);
+        router.patch(`/admin/sites/${id}/restore`);
     };
 
     return (
         <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-            <Head title="Locations" />
+            <Head title="Sites" />
 
             <div className="mb-6 flex items-center justify-between">
-                <Heading title="Locations" description="Manage location list" />
-                <Link href="/admin/locations/create">
+                <Heading title="Sites" description="Manage site list" />
+                <Link href="/admin/sites/create">
                     <Button>
                         <Plus className="size-4" />
-                        Create Location
+                        Create Site
                     </Button>
                 </Link>
             </div>
@@ -57,14 +57,14 @@ export default function LocationIndex({ locations }: { locations: PaginatedLocat
                         </tr>
                     </thead>
                     <tbody>
-                        {locations.data.map((location) => (
-                            <tr key={location.id} className="border-b border-sidebar-border/70 last:border-0 dark:border-sidebar-border">
-                                <td className="px-4 py-3">{location.name}</td>
+                        {sites.data.map((site) => (
+                            <tr key={site.id} className="border-b border-sidebar-border/70 last:border-0 dark:border-sidebar-border">
+                                <td className="px-4 py-3">{site.name}</td>
                                 <td className="px-4 py-3 text-muted-foreground">
-                                    {new Date(location.created_at).toLocaleDateString()}
+                                    {new Date(site.created_at).toLocaleDateString()}
                                 </td>
                                 <td className="px-4 py-3">
-                                    {location.deleted_at ? (
+                                    {site.deleted_at ? (
                                         <Badge variant="secondary">Deleted</Badge>
                                     ) : (
                                         <Badge variant="default">Active</Badge>
@@ -72,18 +72,18 @@ export default function LocationIndex({ locations }: { locations: PaginatedLocat
                                 </td>
                                 <td className="px-4 py-3">
                                     <div className="flex gap-2">
-                                        {location.deleted_at ? (
-                                            <Button variant="ghost" size="sm" onClick={() => handleRestore(location.id)}>
+                                        {site.deleted_at ? (
+                                            <Button variant="ghost" size="sm" onClick={() => handleRestore(site.id)}>
                                                 <RotateCcw className="size-4" />
                                             </Button>
                                         ) : (
                                             <>
-                                                <Link href={`/admin/locations/${location.id}/edit`}>
+                                                <Link href={`/admin/sites/${site.id}/edit`}>
                                                     <Button variant="ghost" size="sm">
                                                         <Edit className="size-4" />
                                                     </Button>
                                                 </Link>
-                                                <Button variant="ghost" size="sm" onClick={() => handleDelete(location.id)}>
+                                                <Button variant="ghost" size="sm" onClick={() => handleDelete(site.id)}>
                                                     <Trash2 className="size-4 text-destructive" />
                                                 </Button>
                                             </>
@@ -92,10 +92,10 @@ export default function LocationIndex({ locations }: { locations: PaginatedLocat
                                 </td>
                             </tr>
                         ))}
-                        {locations.data.length === 0 && (
+                        {sites.data.length === 0 && (
                             <tr>
                                 <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                                    No locations found.
+                                    No sites found.
                                 </td>
                             </tr>
                         )}
@@ -103,9 +103,9 @@ export default function LocationIndex({ locations }: { locations: PaginatedLocat
                 </table>
             </div>
 
-            {locations.last_page > 1 && (
+            {sites.last_page > 1 && (
                 <div className="mt-4 flex justify-center gap-2">
-                    {locations.links.map((link, i) => (
+                    {sites.links.map((link, i) => (
                         <Button
                             key={i}
                             variant={link.active ? 'default' : 'outline'}
@@ -122,9 +122,9 @@ export default function LocationIndex({ locations }: { locations: PaginatedLocat
     );
 }
 
-LocationIndex.layout = {
+SiteIndex.layout = {
     breadcrumbs: [
         { title: 'Admin Dashboard', href: '/admin' },
-        { title: 'Locations', href: '/admin/locations' },
+        { title: 'Sites', href: '/admin/sites' },
     ],
 };

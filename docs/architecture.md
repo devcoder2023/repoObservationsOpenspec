@@ -2,7 +2,7 @@ authentication
 users
 rbac
 observations
-locations
+sites
 categories
 dashboard
 reports

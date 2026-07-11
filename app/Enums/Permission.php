@@ -16,11 +16,11 @@ enum Permission: string
     case ProjectsUpdate = 'projects.update';
     case ProjectsDelete = 'projects.delete';
 
-    // Locations
-    case LocationsView = 'locations.view';
-    case LocationsCreate = 'locations.create';
-    case LocationsUpdate = 'locations.update';
-    case LocationsDelete = 'locations.delete';
+    // Sites
+    case SitesView = 'sites.view';
+    case SitesCreate = 'sites.create';
+    case SitesUpdate = 'sites.update';
+    case SitesDelete = 'sites.delete';
 
     // Categories
     case CategoriesView = 'categories.view';

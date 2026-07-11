@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Location;
 use App\Models\ObservationCategory;
+use App\Models\Site;
 use App\Models\Project;
 use App\Models\User;
 use Inertia\Inertia;
@@ -18,7 +18,7 @@ class DashboardController extends Controller
             'stats' => [
                 'users' => User::count(),
                 'projects' => Project::count(),
-                'locations' => Location::count(),
+                'sites' => Site::count(),
                 'categories' => ObservationCategory::count(),
             ],
         ]);

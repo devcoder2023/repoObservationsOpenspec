@@ -22,8 +22,8 @@
 - Create `php artisan permissions:sync` command for production-safe syncing of enums to database.
 - Permission strings defined as a PHP backed string enum (`Permission`) for type safety and autocomplete.
 - 5 roles: System Administrator, General Manager, Project Manager, Analyst, Observer.
-- 20 permissions: 5 resources (users, projects, locations, categories, observations) × 4 actions (view, create, update, delete) following `resource.action` convention.
-- Master data (users, projects, locations, categories) restricted exclusively to System Administrator.
+- 20 permissions: 5 resources (users, projects, sites, categories, observations) × 4 actions (view, create, update, delete) following `resource.action` convention.
+- Master data (users, projects, sites, categories) restricted exclusively to System Administrator.
 - Observation permissions granted to Observer (full CRUD) while General Manager, Project Manager, and Analyst have read-only access.
 - Permissions shared to frontend via Inertia's `HandleInertiaRequests` shared data.
 - Observer edit/delete permissions remain subject to future business rules (e.g., time window restrictions).
@@ -35,9 +35,9 @@
 **Decisions:**
 - Resource controllers over action classes — straightforward CRUD doesn't warrant the Action pattern.
 - Group all admin controllers under `app/Http/Controllers/Admin/` namespace for isolation.
-- Separate React pages per resource (admin/users/, admin/projects/, admin/locations/, admin/categories/) following existing page-per-feature pattern.
+- Separate React pages per resource (admin/users/, admin/projects/, admin/sites/, admin/categories/) following existing page-per-feature pattern.
 - Admin sidebar conditionally rendered based on System Administrator role via Inertia-shared permissions.
-- Soft deletes on master data (projects, locations, observation categories) to prevent accidental data loss.
+- Soft deletes on master data (projects, sites, observation categories) to prevent accidental data loss.
 - Self-edit protection: admins cannot change their own role or status (prevents self-lockout).
 - Self-deletion protection: admins cannot delete their own account.
 - Unique name validation per entity type (ignoring current record on edit).

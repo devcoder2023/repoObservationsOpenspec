@@ -41,8 +41,8 @@ const adminNavItems: NavItem[] = [
         icon: FolderKanban,
     },
     {
-        title: 'Locations',
-        href: '/admin/locations',
+        title: 'Sites',
+        href: '/admin/sites',
         icon: MapPin,
     },
     {

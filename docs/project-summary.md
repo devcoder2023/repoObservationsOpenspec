@@ -2,9 +2,9 @@
 
 ## Project Purpose
 
-A web application for creating, managing, and reviewing image-based safety observations. Users can upload images, annotate them with notes, specify locations, categories and status, while supervisors review and manage observations.
+A web application for creating, managing, and reviewing image-based safety observations. Users can upload images, annotate them with notes, specify sites, categories and status, while supervisors review and manage observations.
 
-**Current status:** The application has been extended beyond the Laravel scaffold with three implemented feature sets: (1) user account status system (Active/Inactive/Suspended) with registration-as-inactive flow and middleware-based access gating, (2) full Role-Based Access Control (RBAC) using Spatie Laravel Permission with 5 roles and 20 permissions, and (3) an admin dashboard with complete CRUD for users and master data (projects, locations, observation categories). Observation CRUD (the core domain feature) has not been implemented yet.
+**Current status:** The application has been extended beyond the Laravel scaffold with three implemented feature sets: (1) user account status system (Active/Inactive/Suspended) with registration-as-inactive flow and middleware-based access gating, (2) full Role-Based Access Control (RBAC) using Spatie Laravel Permission with 5 roles and 20 permissions, and (3) an admin dashboard with complete CRUD for users and master data (projects, sites, observation categories). Observation CRUD (the core domain feature) has not been implemented yet.
 
 ## Technology Stack
 
@@ -68,7 +68,7 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   │   │   │   ├── DashboardController.php
 │   │   │   │   ├── UserController.php
 │   │   │   │   ├── ProjectController.php
-│   │   │   │   ├── LocationController.php
+│   │   │   │   ├── SiteController.php
 │   │   │   │   └── ObservationCategoryController.php
 │   │   │   └── Settings/         # Settings controllers (Profile, Security)
 │   │   ├── Middleware/
@@ -82,7 +82,7 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   ├── Models/
 │   │   ├── User.php              # With HasRoles trait, UserStatus cast
 │   │   ├── Project.php           # SoftDeletes, fillable name
-│   │   ├── Location.php          # SoftDeletes, fillable name
+│   │   ├── Site.php          # SoftDeletes, fillable name
 │   │   └── ObservationCategory.php # SoftDeletes, fillable name
 │   └── Providers/
 │       ├── AppServiceProvider
@@ -101,7 +101,8 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   │   ├── 2026_07_07_150618_create_permission_tables.php
 │   │   ├── 2026_07_09_000001_create_projects_table.php
 │   │   ├── 2026_07_09_000002_create_locations_table.php
-│   │   └── 2026_07_09_000003_create_observation_categories_table.php
+│   │   ├── 2026_07_09_000003_create_observation_categories_table.php
+│   │   └── 2026_07_11_000001_rename_locations_table_to_sites.php
 │   └── seeders/
 │       ├── DatabaseSeeder.php
 │       └── RoleAndPermissionSeeder.php
@@ -128,7 +129,7 @@ A web application for creating, managing, and reviewing image-based safety obser
 │       │   │   ├── dashboard.tsx
 │       │   │   ├── users/index.tsx, create.tsx, edit.tsx
 │       │   │   ├── projects/index.tsx, create.tsx, edit.tsx
-│       │   │   ├── locations/index.tsx, create.tsx, edit.tsx
+│   │   │   ├── sites/index.tsx, create.tsx, edit.tsx
 │       │   │   └── categories/index.tsx, create.tsx, edit.tsx
 │       │   ├── auth/
 │       │   └── settings/
@@ -136,7 +137,7 @@ A web application for creating, managing, and reviewing image-based safety obser
 │       └── wayfinder/
 ├── routes/
 │   ├── web.php                   # Requires admin.php, defines main routes
-│   ├── admin.php                 # Admin routes (dashboard, users, projects, locations, categories)
+│   ├── admin.php                 # Admin routes (dashboard, users, projects, sites, categories)
 │   └── settings.php
 ├── tests/
 │   ├── Feature/
@@ -204,7 +205,7 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 | `model_has_roles` | User-role assignments |
 | `model_has_permissions` | Direct user-permission assignments (unused — roles only) |
 | `projects` | Project master data (name, soft deletes, timestamps) |
-| `locations` | Location master data (name, soft deletes, timestamps) |
+| `locations` | Site master data (name, soft deletes, timestamps) — renamed to `sites` |
 | `observation_categories` | Observation category master data (name, soft deletes, timestamps) |
 
 ## Existing Features and Modules
@@ -232,7 +233,7 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 
 ### Role-Based Access Control (fully implemented)
 - **Spatie Laravel Permission** package integration
-- **20 permissions** across 5 resources: users, projects, locations, categories, observations (each with view/create/update/delete)
+- **20 permissions** across 5 resources: users, projects, sites, categories, observations (each with view/create/update/delete)
 - **5 predefined roles** with permission mappings:
   - `System Administrator`: all 20 permissions
   - `General Manager`: `observations.view` only
@@ -246,7 +247,7 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 - `config/permissions.php` as the permission registry
 
 ### Admin Dashboard (fully implemented)
-- Landing page at `/admin` with summary counts (users, projects, locations, categories)
+- Landing page at `/admin` with summary counts (users, projects, sites, categories)
 - Navigation cards linking to each management module
 - Protected by `role:System Administrator` middleware
 
@@ -259,7 +260,7 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 
 ### Master Data (fully implemented)
 - **Projects** — full CRUD with soft deletes and restore
-- **Locations** — full CRUD with soft deletes and restore
+- **Sites** — full CRUD with soft deletes and restore
 - **Observation Categories** — full CRUD with soft deletes and restore
 - Unique name validation per entity type (ignoring current record on edit)
 - Soft-deleted records excluded from list views and selects
@@ -312,6 +313,6 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 
 6. **Admin sidebar is permission-gated** — The "Administration" navigation group in the sidebar renders only for users with the System Administrator role, using Inertia-shared permission data.
 
-7. **Soft deletes for master data** — Projects, locations, and observation categories all use soft deletes with a restore action, preventing accidental data loss.
+7. **Soft deletes for master data** — Projects, sites, and observation categories all use soft deletes with a restore action, preventing accidental data loss.
 
 8. **Spatie permission caching** — Permissions are cached by Spatie; the `permissions:sync` command automatically resets the cache after seeding.

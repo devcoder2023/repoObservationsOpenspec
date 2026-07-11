@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['name'])]
-class Location extends Model
+class Site extends Model
 {
     use SoftDeletes;
 }

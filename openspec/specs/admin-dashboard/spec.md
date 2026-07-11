@@ -8,11 +8,11 @@ Provide a dedicated landing page for System Administrators with summary statisti
 
 ### Requirement: Admin dashboard landing page
 
-The system SHALL provide a dedicated admin dashboard page accessible at `/admin` only to users with the System Administrator role. The page SHALL display summary statistics (total users, total projects, total locations, total categories) and provide navigation cards/links to each management module.
+The system SHALL provide a dedicated admin dashboard page accessible at `/admin` only to users with the System Administrator role. The page SHALL display summary statistics (total users, total projects, total sites, total categories) and provide navigation cards/links to each management module.
 
 #### Scenario: System Administrator accesses admin dashboard
 - **WHEN** a user with System Administrator role navigates to `/admin`
-- **THEN** the system displays the admin dashboard with summary counts and links to user management, projects, locations, and categories
+- **THEN** the system displays the admin dashboard with summary counts and links to user management, projects, sites, and categories
 
 #### Scenario: Non-admin user is denied access
 - **WHEN** a user without System Administrator role navigates to `/admin`
@@ -28,7 +28,7 @@ The system SHALL display an "Administration" section in the sidebar navigation o
 
 #### Scenario: Admin user sees admin navigation
 - **WHEN** a System Administrator views the sidebar
-- **THEN** the system displays an "Administration" group with links to dashboard, users, projects, locations, and categories
+- **THEN** the system displays an "Administration" group with links to dashboard, users, projects, sites, and categories
 
 #### Scenario: Non-admin user does not see admin navigation
 - **WHEN** a non-admin user views the sidebar
@@ -111,15 +111,15 @@ Manage core reference data entities — projects, locations, and observation cat
 
 ### Requirement: List master data entities
 
-The system SHALL provide paginated list views for projects (`/admin/projects`), locations (`/admin/locations`), and observation categories (`/admin/categories`). Each list SHALL display the entity name and a created-at timestamp.
+The system SHALL provide paginated list views for projects (`/admin/projects`), sites (`/admin/sites`), and observation categories (`/admin/categories`). Each list SHALL display the entity name and a created-at timestamp.
 
 #### Scenario: Admin views project list
 - **WHEN** a System Administrator navigates to `/admin/projects`
 - **THEN** the system displays a table of all projects with name and created date
 
-#### Scenario: Admin views location list
-- **WHEN** a System Administrator navigates to `/admin/locations`
-- **THEN** the system displays a table of all locations with name and created date
+#### Scenario: Admin views site list
+- **WHEN** a System Administrator navigates to `/admin/sites`
+- **THEN** the system displays a table of all sites with name and created date
 
 #### Scenario: Admin views category list
 - **WHEN** a System Administrator navigates to `/admin/categories`
@@ -127,15 +127,15 @@ The system SHALL provide paginated list views for projects (`/admin/projects`), 
 
 ### Requirement: Create master data entity
 
-The system SHALL provide creation forms for projects, locations, and observation categories. Each form SHALL require a name field (unique per entity type). On success, the system SHALL redirect to the corresponding list view with a success message.
+The system SHALL provide creation forms for projects, sites, and observation categories. Each form SHALL require a name field (unique per entity type). On success, the system SHALL redirect to the corresponding list view with a success message.
 
 #### Scenario: Admin creates a project
 - **WHEN** a System Administrator submits a valid project name
 - **THEN** the system creates the project and redirects to the project list with a success message
 
-#### Scenario: Admin creates a location
-- **WHEN** a System Administrator submits a valid location name
-- **THEN** the system creates the location and redirects to the location list with a success message
+#### Scenario: Admin creates a site
+- **WHEN** a System Administrator submits a valid site name
+- **THEN** the system creates the site and redirects to the site list with a success message
 
 #### Scenario: Admin creates a observation category
 - **WHEN** a System Administrator submits a valid category name
@@ -147,15 +147,15 @@ The system SHALL provide creation forms for projects, locations, and observation
 
 ### Requirement: Edit master data entity
 
-The system SHALL provide edit forms for projects, locations, and observation categories. The form SHALL allow changing the name. The name SHALL remain unique, excluding the current record.
+The system SHALL provide edit forms for projects, sites, and observation categories. The form SHALL allow changing the name. The name SHALL remain unique, excluding the current record.
 
 #### Scenario: Admin edits a project name
 - **WHEN** a System Administrator updates a project's name to a new unique value
 - **THEN** the system updates the project and redirects to the project list with a success message
 
-#### Scenario: Admin edits a location name
-- **WHEN** a System Administrator updates a location's name to a new unique value
-- **THEN** the system updates the location and redirects to the location list with a success message
+#### Scenario: Admin edits a site name
+- **WHEN** a System Administrator updates a site's name to a new unique value
+- **THEN** the system updates the site and redirects to the site list with a success message
 
 #### Scenario: Admin edits a category name
 - **WHEN** a System Administrator updates a category's name to a new unique value
@@ -163,7 +163,7 @@ The system SHALL provide edit forms for projects, locations, and observation cat
 
 ### Requirement: Delete master data entity
 
-The system SHALL provide soft-delete for projects, locations, and observation categories. Deleted records SHALL be excluded from list views and select inputs. The system SHALL provide a restore action.
+The system SHALL provide soft-delete for projects, sites, and observation categories. Deleted records SHALL be excluded from list views and select inputs. The system SHALL provide a restore action.
 
 #### Scenario: Admin soft-deletes a project
 - **WHEN** a System Administrator deletes a project

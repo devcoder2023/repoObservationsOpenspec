@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Requests\Admin\StoreLocationRequest;
 use App\Http\Requests\Admin\StoreObservationCategoryRequest;
+use App\Http\Requests\Admin\StoreSiteRequest;
 use App\Http\Requests\Admin\StoreProjectRequest;
 use App\Http\Requests\Admin\StoreUserRequest;
 
@@ -23,11 +23,11 @@ it('has proper validation rules for store project request', function () {
     expect($rules['name'])->toContain('required', 'string', 'max:255', 'unique:projects,name');
 });
 
-it('has proper validation rules for store location request', function () {
-    $request = new StoreLocationRequest;
+it('has proper validation rules for store site request', function () {
+    $request = new StoreSiteRequest;
     $rules = $request->rules();
 
-    expect($rules['name'])->toContain('required', 'string', 'max:255', 'unique:locations,name');
+    expect($rules['name'])->toContain('required', 'string', 'max:255', 'unique:sites,name');
 });
 
 it('has proper validation rules for store category request', function () {
