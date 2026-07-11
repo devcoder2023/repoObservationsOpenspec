@@ -4,7 +4,7 @@
 
 A web application for creating, managing, and reviewing image-based safety observations. Users can upload images, annotate them with notes, specify locations, categories and status, while supervisors review and manage observations.
 
-**Current status:** This is a fresh scaffold from the Laravel React Starter Kit. No custom domain logic, migrations, models, or business features have been implemented yet. The codebase is at the starting point with only authentication and user settings in place.
+**Current status:** The application has been extended beyond the Laravel scaffold with three implemented feature sets: (1) user account status system (Active/Inactive/Suspended) with registration-as-inactive flow and middleware-based access gating, (2) full Role-Based Access Control (RBAC) using Spatie Laravel Permission with 5 roles and 20 permissions, and (3) an admin dashboard with complete CRUD for users and master data (projects, locations, observation categories). Observation CRUD (the core domain feature) has not been implemented yet.
 
 ## Technology Stack
 
@@ -16,6 +16,7 @@ A web application for creating, managing, and reviewing image-based safety obser
 - **Inertia:** `inertiajs/inertia-laravel ^3.0`
 - **Wayfinder:** `laravel/wayfinder ^0.1.14` (typed route generation)
 - **Chisel:** `laravel/chisel ^0.1.0` (Laravel dev server)
+- **RBAC:** `spatie/laravel-permission` (role and permission management)
 
 ### Frontend
 - **Framework:** React 19 with TypeScript
@@ -43,6 +44,7 @@ A web application for creating, managing, and reviewing image-based safety obser
 - All routing is server-side (Laravel routes return Inertia page responses).
 - Frontend is a full React SPA managed through Inertia's client-side routing.
 - Authentication is handled server-side by Laravel Fortify with Inertia-powered views.
+- Authorization is handled server-side by Spatie Laravel Permission with Inertia-shared permission data.
 - No separate backend/frontend split — the React app is served from within Laravel.
 
 ## Folder Structure
@@ -52,57 +54,102 @@ A web application for creating, managing, and reviewing image-based safety obser
 ├── app/                          # Laravel application code
 │   ├── Actions/Fortify/          # Fortify action classes (CreateNewUser, ResetUserPassword)
 │   ├── Concerns/                 # Shared traits (PasswordValidationRules, ProfileValidationRules)
-│   ├── Console/                  # Artisan commands (empty)
+│   ├── Console/                  # Artisan commands
+│   │   ├── Commands/SyncPermissions.php    # permissions:sync command
+│   │   └── Commands/UsersStatusCommand.php # users:status command
 │   ├── Enums/
+│   │   ├── UserStatus.php        # Active=1, Inactive=2, Suspended=3
+│   │   ├── Permission.php        # 20 permission string enum cases
+│   │   └── Role.php              # 5 role cases with permission mapping method
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── Controller.php    # Base controller
+│   │   │   ├── Controller.php
+│   │   │   ├── Admin/
+│   │   │   │   ├── DashboardController.php
+│   │   │   │   ├── UserController.php
+│   │   │   │   ├── ProjectController.php
+│   │   │   │   ├── LocationController.php
+│   │   │   │   └── ObservationCategoryController.php
 │   │   │   └── Settings/         # Settings controllers (Profile, Security)
-│   │   ├── Middleware/           # HandleAppearance, HandleInertiaRequests
+│   │   ├── Middleware/
+│   │   │   ├── CheckUserStatus.php    # Blocks inactive/suspended users
+│   │   │   ├── HandleAppearance
+│   │   │   └── HandleInertiaRequests
 │   │   ├── Responses/
-│   │   └── Requests/Settings/    # Form requests (PasswordUpdate, ProfileDelete, ProfileUpdate, TwoFactorAuth)
-│   ├── Models/                   # User model (only model)
-│   └── Providers/                # AppServiceProvider, FortifyServiceProvider
-├── bootstrap/                    # Laravel bootstrap
-├── config/                       # Configuration files
+│   │   └── Requests/
+│   │       ├── Admin/            # Form requests for admin CRUD
+│   │       └── Settings/         # Form requests (PasswordUpdate, ProfileDelete, etc.)
+│   ├── Models/
+│   │   ├── User.php              # With HasRoles trait, UserStatus cast
+│   │   ├── Project.php           # SoftDeletes, fillable name
+│   │   ├── Location.php          # SoftDeletes, fillable name
+│   │   └── ObservationCategory.php # SoftDeletes, fillable name
+│   └── Providers/
+│       ├── AppServiceProvider
+│       └── FortifyServiceProvider
+├── bootstrap/
+├── config/
+│   ├── permissions.php           # Resource-action mapping + master data list
+│   └── permission.php            # Spatie package config
 ├── database/
-│   ├── factories/                # Model factories
-│   ├── migrations/               # Only default Laravel migrations (users, cache, jobs)
-│   └── seeders/                  # Database seeders
-├── docs/                         # Project documentation
+│   ├── factories/
+│   ├── migrations/
+│   │   ├── 0001_01_01_000000_create_users_table.php
+│   │   ├── 0001_01_01_000001_create_cache_table.php
+│   │   ├── 0001_01_01_000002_create_jobs_table.php
+│   │   ├── 2026_07_05_192536_add_status_to_users.php
+│   │   ├── 2026_07_07_150618_create_permission_tables.php
+│   │   ├── 2026_07_09_000001_create_projects_table.php
+│   │   ├── 2026_07_09_000002_create_locations_table.php
+│   │   └── 2026_07_09_000003_create_observation_categories_table.php
+│   └── seeders/
+│       ├── DatabaseSeeder.php
+│       └── RoleAndPermissionSeeder.php
+├── docs/
 │   ├── project-summary.md        # This file
 │   └── decision-log.md           # Architectural decisions
 ├── openspec/                     # OpenSpec workflow directory
-│   ├── changes/                  # Active/archived changes (empty)
-│   ├── specs/                    # Specification files (empty)
-│   └── config.yaml               # OpenSpec config
+│   ├── changes/                  # Active/archived changes
+│   │   └── archive/              # 3 archived changes
+│   ├── specs/                    # Canonical specifications
+│   │   ├── auth/spec.md          # Auth + user account status
+│   │   ├── rbac/spec.md          # RBAC (permissions, roles, authorization)
+│   │   └── admin-dashboard/spec.md # Admin dashboard + user mgmt + master data
+│   └── config.yaml
 ├── resources/
 │   └── js/                       # React SPA frontend
-│       ├── actions/              # Server-side action classes (mirrored for Wayfinder types)
-│       ├── components/           # Reusable React components
+│       ├── components/
 │       │   └── ui/               # Radix UI wrapper components
-│       ├── hooks/                # Custom React hooks
-│       ├── layouts/              # Page layouts (app, auth, settings)
-│       ├── lib/                  # Utility functions
-│       ├── pages/                # Page components (auth/, settings/, welcome, dashboard)
-│       ├── routes/               # Wayfinder route definitions
-│       ├── types/                # TypeScript type definitions
-│       └── wayfinder/            # Auto-generated route types
+│       ├── hooks/
+│       ├── layouts/
+│       ├── lib/
+│       ├── pages/
+│       │   ├── admin/
+│       │   │   ├── dashboard.tsx
+│       │   │   ├── users/index.tsx, create.tsx, edit.tsx
+│       │   │   ├── projects/index.tsx, create.tsx, edit.tsx
+│       │   │   ├── locations/index.tsx, create.tsx, edit.tsx
+│       │   │   └── categories/index.tsx, create.tsx, edit.tsx
+│       │   ├── auth/
+│       │   └── settings/
+│       ├── routes/
+│       └── wayfinder/
 ├── routes/
-│   ├── web.php                   # Web routes (home, dashboard, settings)
-│   └── settings.php              # Settings routes (profile, security, appearance)
+│   ├── web.php                   # Requires admin.php, defines main routes
+│   ├── admin.php                 # Admin routes (dashboard, users, projects, locations, categories)
+│   └── settings.php
 ├── tests/
-│   ├── Feature/                  # Feature tests (Pest)
-│   ├── Unit/                     # Unit tests (Pest)
-│   ├── Pest.php                  # Pest configuration
-│   └── TestCase.php              # Base test case
-├── vendor/                       # Composer dependencies
-├── node_modules/                 # npm dependencies
+│   ├── Feature/
+│   │   ├── Rbac/                 # RBAC authorization tests
+│   │   └── ...
+│   ├── Unit/
+│   ├── Pest.php
+│   └── TestCase.php
+├── vendor/
+├── node_modules/
 ├── composer.json
 ├── package.json
-├── pnpm-workspace.yaml
-├── vite.config.ts
-└── tsconfig.json
+└── vite.config.ts
 ```
 
 ## Authentication Mechanism
@@ -115,16 +162,30 @@ A web application for creating, managing, and reviewing image-based safety obser
 - **Password rules:** Minimum 12 characters with mixed case, letters, numbers, symbols, and uncompromised check (production); no constraints in development
 - **Verification:** Email verification is required for certain routes (e.g., profile deletion, security settings)
 - **Session-based:** Authentication uses the `web` guard with database session driver
-- **Redirection:** Post-register redirects to `/login`
+- **Redirection:** New users register as `Inactive` and are redirected to `/login` with a flash message (no auto-login)
 - **Redirection:** Post-login redirects to `/dashboard`
 
-## Database Structure (High-Level)
+### User Account Status
 
-Only **default Laravel tables** exist (no custom domain tables):
+The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
+
+| Status | Value | Description |
+|---|---|---|
+| `Active` | 1 | Full access to the application |
+| `Inactive` | 2 | Default on registration; blocked from authenticated routes |
+| `Suspended` | 3 | Set by admin; blocked from authenticated routes |
+
+- `CheckUserStatus` middleware runs on all authenticated routes
+- Non-active users are logged out and redirected to login with a flash message
+- Admin can change status via `php artisan users:status {email} {status}`
+
+## Database Structure
+
+### Default Laravel Tables
 
 | Table | Purpose |
 |---|---|
-| `users` | User accounts (id, name, email, password, 2FA fields, timestamps, status) |
+| `users` | User accounts (id, name, email, password, status, 2FA fields, timestamps) |
 | `password_reset_tokens` | Password reset tokens |
 | `sessions` | User sessions |
 | `cache` | Cache store |
@@ -133,26 +194,80 @@ Only **default Laravel tables** exist (no custom domain tables):
 | `job_batches` | Batch job tracking |
 | `failed_jobs` | Failed job records |
 
-The `users` table has basic fields: `id`, `name`, `email`, `email_verified_at`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `remember_token`, `timestamps`, and added field `status`.
+### Custom Tables
+
+| Table | Purpose |
+|---|---|
+| `permissions` | Spatie permissions (20 rows: users.view, observations.create, etc.) |
+| `roles` | Spatie roles (5 rows: System Administrator, General Manager, Project Manager, Analyst, Observer) |
+| `role_has_permissions` | Role-permission assignments |
+| `model_has_roles` | User-role assignments |
+| `model_has_permissions` | Direct user-permission assignments (unused — roles only) |
+| `projects` | Project master data (name, soft deletes, timestamps) |
+| `locations` | Location master data (name, soft deletes, timestamps) |
+| `observation_categories` | Observation category master data (name, soft deletes, timestamps) |
 
 ## Existing Features and Modules
 
 ### Authentication (fully implemented)
-- User registration
-- Login
+- User registration (creates as Inactive, redirects to login)
+- Login (authenticated users only allowed if Active)
 - Password reset (via email)
 - Email verification
 - Password confirmation
 - Login rate limiting
+- User status middleware (CheckUserStatus)
 
 ### User Settings (fully implemented)
 - **Profile:** Edit name and email, delete account
 - **Security:** Update password, manage two-factor authentication
 - **Appearance:** Theme toggle (light/dark mode)
 
+### User Account Status (fully implemented)
+- Backed int enum: `UserStatus::Active`, `UserStatus::Inactive`, `UserStatus::Suspended`
+- Registration creates users as Inactive (no auto-login)
+- `CheckUserStatus` middleware blocks non-active users on all authenticated routes
+- `php artisan users:status {email} {status}` CLI command for status management
+- Existing users preserved as Active via migration
+
+### Role-Based Access Control (fully implemented)
+- **Spatie Laravel Permission** package integration
+- **20 permissions** across 5 resources: users, projects, locations, categories, observations (each with view/create/update/delete)
+- **5 predefined roles** with permission mappings:
+  - `System Administrator`: all 20 permissions
+  - `General Manager`: `observations.view` only
+  - `Project Manager`: `observations.view` only
+  - `Analyst`: `observations.view` only
+  - `Observer`: `observations.view`, `observations.create`, `observations.update`, `observations.delete`
+- `RoleAndPermissionSeeder` for idempotent seeding
+- `php artisan permissions:sync` command for syncing enums to database
+- Permission middleware on all admin and observation routes
+- Permissions shared to frontend via Inertia (`HandleInertiaRequests`)
+- `config/permissions.php` as the permission registry
+
+### Admin Dashboard (fully implemented)
+- Landing page at `/admin` with summary counts (users, projects, locations, categories)
+- Navigation cards linking to each management module
+- Protected by `role:System Administrator` middleware
+
+### User Management (fully implemented)
+- Paginated user list with search by name/email at `/admin/users`
+- Create user form with name, email, password, role dropdown, status select
+- Edit user form with optional password, role sync, status toggle
+- Self-edit protection: cannot change own role or status
+- Self-deletion protection: cannot delete own account
+
+### Master Data (fully implemented)
+- **Projects** — full CRUD with soft deletes and restore
+- **Locations** — full CRUD with soft deletes and restore
+- **Observation Categories** — full CRUD with soft deletes and restore
+- Unique name validation per entity type (ignoring current record on edit)
+- Soft-deleted records excluded from list views and selects
+
 ### Pages
 - Welcome/landing page (`/`)
-- Dashboard (`/dashboard`) — authenticated, verified users only
+- Dashboard (`/dashboard`) — authenticated, verified, active users only
+- Admin pages (`/admin/*`) — System Administrator only
 - Auth pages (login, register, forgot/reset password, verify email, confirm password)
 - Settings pages (profile, security, appearance)
 
@@ -165,7 +280,9 @@ The `users` table has basic fields: `id`, `name`, `email`, `email_verified_at`, 
 - **No API** — no REST API layer; all data flows through Inertia server-side rendering
 - **Actions pattern** — complex business logic extracted into action classes (e.g., Fortify actions)
 - **Concerns/traits** — shared validation rules extracted into traits
-- **Policies** — to be used for authorization (none defined yet)
+- **RBAC via Spatie** — authorization uses `spatie/laravel-permission` middleware and helpers, not policies
+- **Admin controllers** — grouped under `Admin/` namespace with resource routing
+- **Soft deletes** — master data entities use `SoftDeletes` trait
 
 ### Frontend Conventions
 - **React functional components** — no class components
@@ -174,6 +291,7 @@ The `users` table has basic fields: `id`, `name`, `email`, `email_verified_at`, 
 - **Radix UI primitives** — accessible, unstyled UI components wrapped in project-specific components
 - **Tailwind CSS** — utility-first styling with no CSS modules or styled-components
 - **TypeScript** — typed throughout with strict mode
+- **Permission-gated UI** — frontend conditionally renders elements based on Inertia-shared permissions
 
 ### Testing Conventions
 - **Pest PHP** — test framework for both Feature and Unit tests
@@ -182,22 +300,18 @@ The `users` table has basic fields: `id`, `name`, `email`, `email_verified_at`, 
 
 ## Notable Observations
 
-1. **Greenfield project** — This is a fresh Laravel React Starter Kit installation. No custom domain features (safety observations, image uploads, categories, etc.) have been implemented. All custom migrations, models, controllers, and frontend pages are yet to be built.
+1. **Three feature sets implemented** — User account status, RBAC with Spatie, and admin dashboard with user management and master data CRUD are fully implemented. Observation CRUD (the core domain feature) remains to be built.
 
-2. **Documentation gaps** — Both `docs/project-summary.md` and `docs/decision-log.md` were empty and have been initialized by this analysis.
+2. **Enum-driven design** — Both roles, permissions, and user status use PHP backed enums with logic (e.g., `Role::permissions()`) rather than database-driven configuration. This makes the permission model explicit and type-safe.
 
-3. **OpenSpec workflow** — The `.opencode/` directory and `openspec/` directory are set up for OpenSpec-driven development, but no changes or specs have been created yet.
+3. **Three archived OpenSpec changes** — The project has completed 3 specification-driven changes: `2026-07-05-add-inactive-user-status`, `2026-07-07-implement-rbac-spatie-permission`, and `2026-07-11-admin-dashboard`. Each was designed, specified, implemented, and archived.
 
-4. **Developer environment uses SQLite** — The `.env.example` defaults to SQLite for local development, while production is expected to use MySQL. Tests also use SQLite in-memory.
+4. **Specs consolidated** — The RBAC change initially produced 3 separate delta specs (authorization, permissions, roles) which were consolidated into a single `openspec/specs/rbac/spec.md` file. The auth spec was also merged with the user-account-status delta spec.
 
-5. **Wayfinder integration** — The project uses Laravel Wayfinder for typed routes, with route definitions mirrored in `resources/js/routes/` and auto-generated types in `resources/js/wayfinder/`.
+5. **Canonical specs in `openspec/specs/`** — Three specification files exist: `auth/spec.md` (authentication + user status), `rbac/spec.md` (permissions, roles, authorization), and `admin-dashboard/spec.md` (dashboard, user management, master data).
 
-6. **Frontend routes are organized by feature** — Each auth feature (login, register, password, verification) has its own route file under `resources/js/routes/`, which aligns with the backend route structure.
+6. **Admin sidebar is permission-gated** — The "Administration" navigation group in the sidebar renders only for users with the System Administrator role, using Inertia-shared permission data.
 
-7. **No service layer yet** — The project currently has no service classes, which aligns with the AGENTS.md guidance to use services only for complex business logic.
+7. **Soft deletes for master data** — Projects, locations, and observation categories all use soft deletes with a restore action, preventing accidental data loss.
 
-8. **Pnpm over npm** — The project uses pnpm as the package manager (indicated by `pnpm-workspace.yaml` and `pnpm-lock.yaml`).
-
-9. **PHP 8 attributes** — The User model uses PHP 8 native attributes (`#[Fillable]`, `#[Hidden]`) instead of traditional `$fillable`/`$hidden` properties.
-
-10. **Production password rules are strict** — In production, passwords require minimum 12 characters, mixed case, letters, numbers, symbols, and uncompromised check. Development has no constraints.
+8. **Spatie permission caching** — Permissions are cached by Spatie; the `permissions:sync` command automatically resets the cache after seeding.
