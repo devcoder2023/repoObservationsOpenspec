@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Users, FolderKanban, MapPin, Tags, Shield } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, Users, FolderKanban, MapPin, Tags, Shield, ClipboardCheck, BarChart3, PlusCircle } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -21,6 +21,24 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+];
+
+const observationNavItems: NavItem[] = [
+    {
+        title: 'Dashboard',
+        href: '/observations/dashboard',
+        icon: BarChart3,
+    },
+    {
+        title: 'All Observations',
+        href: '/observations',
+        icon: ClipboardCheck,
+    },
+    {
+        title: 'Create Observation',
+        href: '/observations/create',
+        icon: PlusCircle,
     },
 ];
 
@@ -69,6 +87,8 @@ export function AppSidebar() {
     const { auth } = usePage<{ auth: Auth }>().props;
     const isAdmin = auth.permissions.includes('users.view');
 
+    const canViewObservations = auth.permissions.includes('observations.view');
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -85,6 +105,10 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+
+                {canViewObservations && (
+                    <NavMain items={observationNavItems} label="Observations" />
+                )}
 
                 {isAdmin && (
                     <NavMain items={adminNavItems} label="Administration" />

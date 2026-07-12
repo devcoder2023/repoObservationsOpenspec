@@ -52,6 +52,24 @@
 - Merged the user-account-status delta spec into `openspec/specs/auth/spec.md` as both relate to authentication concerns.
 - Model specifications by business capability rather than technical components.
 
+## 2026-07-11 — Observation CRUD, Dashboard, and Status Lifecycle
+
+**Context:** The core domain feature — image-based safety observations — had no implementation despite existing RBAC permissions (observations.view/create/update/delete), and the existing Observer role was unusable.
+
+**Decisions:**
+- Use int-backed enums (`ObservationShift`, `RiskDegree`, `ObservationStatus`) with values 1/2/3 rather than string enums, for database storage efficiency while keeping type safety.
+- Use `tinyInteger` columns in the migration rather than varchar, aligning with the int-backed enum design.
+- Default observation status to Open (1) on creation; transition to Close (2) only when `image_after` is uploaded — no other transitions.
+- Enforce 2-day edit/delete window server-side in `UpdateObservationRequest` and controller (`created_at` compared to `now()->subHours(48)`).
+- Pass all sites from controller to create/edit pages, filter client-side on project selection, rather than fetching via API — fewer network requests, instant filtering.
+- Provide `custom_site` free-text fallback for sites not in the dropdown, since not all locations may be pre-registered.
+- Store images on `public` disk under `observations/Y/m/` directory structure for date-based organization; serve via `/storage/` symlink.
+- Paginate observation list at 20 per page with query string preservation for filters.
+- Delete associated images from storage when an observation is deleted.
+- Define observation routes in a dedicated `routes/observations.php` file (included from `web.php`) behind `auth`, `verified`, `CheckUserStatus`, and `observations.*` permission middleware.
+- Include previous month in dashboard stats for month-over-month comparison.
+- Observer role gets view/create/update/delete; other roles (General Manager, Project Manager, Analyst) get read-only access via `observations.view` only.
+
 ## 2026-07-11 — Link Sites to Projects
 
 **Context:** Sites and projects were independent master data entities with no relationship. Site management forms only collected a name, and database data was empty.

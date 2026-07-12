@@ -13,7 +13,7 @@ Route::middleware(['auth', 'verified', 'user.status', 'role:System Administrator
 });
 
 Route::middleware(['auth', 'verified', 'user.status', 'permission:observations.view'])->prefix('observations')->name('observations.')->group(function () {
-    // Observation routes will be added here in a future change
+    require __DIR__.'/observations.php';
 });
 
 require __DIR__.'/settings.php';

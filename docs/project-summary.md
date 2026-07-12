@@ -4,7 +4,7 @@
 
 A web application for creating, managing, and reviewing image-based safety observations. Users can upload images, annotate them with notes, specify sites, categories and status, while supervisors review and manage observations.
 
-**Current status:** The application has been extended beyond the Laravel scaffold with three implemented feature sets: (1) user account status system (Active/Inactive/Suspended) with registration-as-inactive flow and middleware-based access gating, (2) full Role-Based Access Control (RBAC) using Spatie Laravel Permission with 5 roles and 20 permissions, and (3) an admin dashboard with complete CRUD for users and master data (projects, sites, observation categories). Observation CRUD (the core domain feature) has not been implemented yet.
+**Current status:** The application has been extended beyond the Laravel scaffold with four implemented feature sets: (1) user account status system (Active/Inactive/Suspended) with registration-as-inactive flow and middleware-based access gating, (2) full Role-Based Access Control (RBAC) using Spatie Laravel Permission with 5 roles and 20 permissions, (3) an admin dashboard with complete CRUD for users and master data (projects, sites, observation categories), and (4) a complete Observation CRUD system with image upload, status lifecycle, and a statistics dashboard.
 
 ## Technology Stack
 
@@ -60,7 +60,10 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   ├── Enums/
 │   │   ├── UserStatus.php        # Active=1, Inactive=2, Suspended=3
 │   │   ├── Permission.php        # 20 permission string enum cases
-│   │   └── Role.php              # 5 role cases with permission mapping method
+│   │   ├── Role.php              # 5 role cases with permission mapping method
+│   │   ├── ObservationShift.php  # Morning=1, Evening=2, Night=3
+│   │   ├── RiskDegree.php        # Low=1, Medium=2, High=3
+│   │   └── ObservationStatus.php # Open=1, Close=2
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Controller.php
@@ -70,6 +73,7 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   │   │   │   ├── ProjectController.php
 │   │   │   │   ├── SiteController.php
 │   │   │   │   └── ObservationCategoryController.php
+│   │   │   ├── ObservationController.php  # Full CRUD + dashboard + sitesByProject
 │   │   │   └── Settings/         # Settings controllers (Profile, Security)
 │   │   ├── Middleware/
 │   │   │   ├── CheckUserStatus.php    # Blocks inactive/suspended users
@@ -78,12 +82,14 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   │   ├── Responses/
 │   │   └── Requests/
 │   │       ├── Admin/            # Form requests for admin CRUD
+│   │       ├── Observation/      # StoreObservationRequest, UpdateObservationRequest
 │   │       └── Settings/         # Form requests (PasswordUpdate, ProfileDelete, etc.)
 │   ├── Models/
-│   │   ├── User.php              # With HasRoles trait, UserStatus cast
-│   │   ├── Project.php           # SoftDeletes, fillable name, hasMany sites
-│   │   ├── Site.php              # SoftDeletes, fillable name+project_id, belongsTo project
-│   │   └── ObservationCategory.php # SoftDeletes, fillable name
+│   │   ├── User.php              # With HasRoles trait, UserStatus cast, hasMany observations
+│   │   ├── Project.php           # SoftDeletes, fillable name, hasMany sites, hasMany observations
+│   │   ├── Site.php              # SoftDeletes, fillable name+project_id, belongsTo project, hasMany observations
+│   │   ├── ObservationCategory.php # SoftDeletes, fillable name, hasMany observations
+│   │   └── Observation.php       # Int-backed enum casts, relationships to project/site/category/creator
 │   └── Providers/
 │       ├── AppServiceProvider
 │       └── FortifyServiceProvider
@@ -102,7 +108,8 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   │   ├── 2026_07_09_000001_create_projects_table.php
 │   │   ├── 2026_07_09_000002_create_locations_table.php
 │   │   ├── 2026_07_09_000003_create_observation_categories_table.php
-│   │   └── 2026_07_11_000001_rename_locations_table_to_sites.php
+│   │   ├── 2026_07_11_000001_rename_locations_table_to_sites.php
+│   │   └── 2026_07_11_010000_create_observations_table.php
 │   └── seeders/
 │       ├── DatabaseSeeder.php
 │       └── RoleAndPermissionSeeder.php
@@ -111,11 +118,12 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   └── decision-log.md           # Architectural decisions
 ├── openspec/                     # OpenSpec workflow directory
 │   ├── changes/                  # Active/archived changes
-│   │   └── archive/              # 3 archived changes
+│   │   └── archive/              # 4 archived changes
 │   ├── specs/                    # Canonical specifications
 │   │   ├── auth/spec.md          # Auth + user account status
 │   │   ├── rbac/spec.md          # RBAC (permissions, roles, authorization)
-│   │   └── admin-dashboard/spec.md # Admin dashboard + user mgmt + master data
+│   │   ├── admin-dashboard/spec.md # Admin dashboard + user mgmt + master data
+│   │   └── observations/spec.md  # Observation CRUD, status lifecycle, dashboard
 │   └── config.yaml
 ├── resources/
 │   └── js/                       # React SPA frontend
@@ -136,8 +144,9 @@ A web application for creating, managing, and reviewing image-based safety obser
 │       ├── routes/
 │       └── wayfinder/
 ├── routes/
-│   ├── web.php                   # Requires admin.php, defines main routes
+│   ├── web.php                   # Requires admin.php, observations.php, defines main routes
 │   ├── admin.php                 # Admin routes (dashboard, users, projects, sites, categories)
+│   ├── observations.php          # 9 observation routes (index, create, store, show, edit, update, destroy, dashboard, sitesByProject)
 │   └── settings.php
 ├── tests/
 │   ├── Feature/
@@ -208,6 +217,7 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 | `locations` | Site master data (name, soft deletes, timestamps) — renamed to `sites` |
 | `sites` | Site master data (name, `project_id` FK to projects, soft deletes, timestamps) |
 | `observation_categories` | Observation category master data (name, soft deletes, timestamps) |
+| `observations` | Safety observations with image_before, image_after, comments, shift (int enum: 1/2/3), risk_degree (int enum: 1/2/3), status (int enum: 1/2), FKs to projects/sites/categories/creators |
 
 ## Existing Features and Modules
 
@@ -266,10 +276,23 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 - Unique name validation per entity type (ignoring current record on edit)
 - Soft-deleted records excluded from list views and selects
 
+### Observations CRUD & Dashboard (fully implemented)
+- **Int-backed enums:** ObservationShift (1=Morning, 2=Evening, 3=Night), RiskDegree (1=Low, 2=Medium, 3=High), ObservationStatus (1=Open, 2=Close)
+- **Create observation** at `/observations/create` — form with image_before, comments, project/site/category selects, shift/risk_degree selects, custom_site free-text
+- **Site filtering:** All sites pre-loaded from controller and filtered client-side when a project is selected; custom_site fallback for unlisted sites
+- **List observations** at `/observations` — paginated (20/page), filterable by project, site, category, shift, risk_degree, status, and date range; actions (view/edit/delete) gated by permissions and 2-day time window
+- **Detail view** at `/observations/{id}` — full observation display with both images and all metadata
+- **Edit observation** at `/observations/{id}/edit` — pre-populated form; uploading image_after transitions status to Close (2); edit restricted to 48-hour window (server-enforced)
+- **Delete observation** with image cleanup from storage; also restricted to 48-hour window
+- **Dashboard** at `/observations/dashboard` — statistics cards for today, this week, this month, previous month with total/open/close counts and risk_degree distribution
+- Images stored on `public` disk under `observations/Y/m/`; served via `/storage/` symlink
+- Routes defined in `routes/observations.php` behind `observations.*` permission middleware
+
 ### Pages
 - Welcome/landing page (`/`)
 - Dashboard (`/dashboard`) — authenticated, verified, active users only
 - Admin pages (`/admin/*`) — System Administrator only
+- Observation pages (`/observations/*`) — users with `observations.view` permission
 - Auth pages (login, register, forgot/reset password, verify email, confirm password)
 - Settings pages (profile, security, appearance)
 
@@ -302,18 +325,26 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 
 ## Notable Observations
 
-1. **Three feature sets implemented** — User account status, RBAC with Spatie, and admin dashboard with user management and master data CRUD are fully implemented. Observation CRUD (the core domain feature) remains to be built.
+1. **Four feature sets implemented** — User account status, RBAC with Spatie, admin dashboard with user management and master data CRUD, and Observation CRUD with dashboard are all fully implemented.
 
-2. **Enum-driven design** — Both roles, permissions, and user status use PHP backed enums with logic (e.g., `Role::permissions()`) rather than database-driven configuration. This makes the permission model explicit and type-safe.
+2. **Enum-driven design** — Roles, permissions, user status, and observation enums all use PHP backed enums with logic rather than database-driven configuration. Observation enums (shift, risk_degree, status) are int-backed for database efficiency.
 
-3. **Three archived OpenSpec changes** — The project has completed 3 specification-driven changes: `2026-07-05-add-inactive-user-status`, `2026-07-07-implement-rbac-spatie-permission`, and `2026-07-11-admin-dashboard`. Each was designed, specified, implemented, and archived.
+3. **Four archived OpenSpec changes** — The project has completed 4 specification-driven changes: `2026-07-05-add-inactive-user-status`, `2026-07-07-implement-rbac-spatie-permission`, `2026-07-11-admin-dashboard`, and `2026-07-11-observations-crud-dashboard`. Each was designed, specified, implemented, and archived.
 
 4. **Specs consolidated** — The RBAC change initially produced 3 separate delta specs (authorization, permissions, roles) which were consolidated into a single `openspec/specs/rbac/spec.md` file. The auth spec was also merged with the user-account-status delta spec.
 
-5. **Canonical specs in `openspec/specs/`** — Three specification files exist: `auth/spec.md` (authentication + user status), `rbac/spec.md` (permissions, roles, authorization), and `admin-dashboard/spec.md` (dashboard, user management, master data).
+5. **Canonical specs in `openspec/specs/`** — Four specification files exist: `auth/spec.md` (authentication + user status), `rbac/spec.md` (permissions, roles, authorization), `admin-dashboard/spec.md` (dashboard, user management, master data), and `observations/spec.md` (observation CRUD, status lifecycle, dashboard).
 
 6. **Admin sidebar is permission-gated** — The "Administration" navigation group in the sidebar renders only for users with the System Administrator role, using Inertia-shared permission data.
 
-7. **Soft deletes for master data** — Projects, sites, and observation categories all use soft deletes with a restore action, preventing accidental data loss.
+7. **Observations sidebar is permission-gated** — The "Observations" navigation group (Dashboard, All Observations, Create) renders for users with `observations.view` permission.
 
-8. **Spatie permission caching** — Permissions are cached by Spatie; the `permissions:sync` command automatically resets the cache after seeding.
+8. **Soft deletes for master data** — Projects, sites, and observation categories all use soft deletes with a restore action, preventing accidental data loss.
+
+9. **Spatie permission caching** — Permissions are cached by Spatie; the `permissions:sync` command automatically resets the cache after seeding.
+
+10. **Observation status lifecycle** — Status defaults to Open (1) on creation; uploading image_after transitions to Close (2). No other transitions exist.
+
+11. **2-day edit/delete window** — Observations can only be edited or deleted within 48 hours of creation, enforced server-side on both update and destroy actions.
+
+12. **Sites filtered by project** — Site dropdown on create/edit pages shows all sites initially and filters client-side when a project is selected; custom_site free-text field serves as fallback for unlisted sites.

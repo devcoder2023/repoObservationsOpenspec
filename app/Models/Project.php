@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Site> $sites
+ * @property-read Collection<int, Observation> $observations
  */
 #[Fillable(['name'])]
 class Project extends Model
@@ -26,5 +27,11 @@ class Project extends Model
     public function sites(): HasMany
     {
         return $this->hasMany(Site::class);
+    }
+
+    /** @return HasMany<Observation, $this> */
+    public function observations(): HasMany
+    {
+        return $this->hasMany(Observation::class);
     }
 }
