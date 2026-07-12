@@ -46,6 +46,14 @@ The system SHALL provide a paginated, filterable list of observations at `/obser
 - **WHEN** a user applies filters (project, site, category, shift, risk_degree, status, date range)
 - **THEN** the system filters the observation list accordingly
 
+#### Scenario: Observer sees only own observations
+- **WHEN** a user with the `Observer` role (who lacks `observations.view_all`) navigates to `/observations`
+- **THEN** the system SHALL only display observations where `creator_id` matches the authenticated user
+
+#### Scenario: Manager/analyst sees all observations
+- **WHEN** a user with `observations.view_all` permission navigates to `/observations`
+- **THEN** the system SHALL display observations created by all users
+
 ### Requirement: View observation detail
 
 The system SHALL provide a detail view at `/observations/{observation}` showing all observation data including both images and full metadata.
@@ -53,6 +61,10 @@ The system SHALL provide a detail view at `/observations/{observation}` showing 
 #### Scenario: User views observation detail
 - **WHEN** a user with `observations.view` permission navigates to `/observations/{id}`
 - **THEN** the system displays the observation with image_before, image_after (if present), all comments, and all metadata
+
+#### Scenario: Observer denied viewing another user's observation
+- **WHEN** a user without `observations.view_all` permission navigates to `/observations/{id}` for an observation they did not create
+- **THEN** the system SHALL return a 403 Forbidden response
 
 ### Requirement: Edit observation
 
@@ -70,6 +82,10 @@ The system SHALL provide an edit form at `/observations/{observation}/edit` acce
 - **WHEN** a user attempts to edit an observation created more than 48 hours ago
 - **THEN** the system displays an error and does not allow the edit
 
+#### Scenario: Observer cannot edit another user's observation
+- **WHEN** a user without `observations.view_all` permission navigates to `/observations/{id}/edit` for an observation they did not create
+- **THEN** the system returns a 403 Forbidden response
+
 #### Scenario: User without update permission is denied
 - **WHEN** a user without `observations.update` permission navigates to `/observations/{id}/edit`
 - **THEN** the system returns a 403 Forbidden response
@@ -85,6 +101,10 @@ The system SHALL provide a delete action for observations. Deleting SHALL be res
 #### Scenario: Observer cannot delete observation after 2 days
 - **WHEN** a user attempts to delete an observation created more than 48 hours ago
 - **THEN** the system displays an error and does not allow deletion
+
+#### Scenario: Observer cannot delete another user's observation
+- **WHEN** a user without `observations.view_all` permission attempts to delete an observation they did not create
+- **THEN** the system returns a 403 Forbidden response
 
 #### Scenario: User without delete permission is denied
 - **WHEN** a user without `observations.delete` permission attempts to delete an observation
@@ -113,3 +133,7 @@ The system SHALL provide a dashboard page at `/observations/dashboard` accessibl
 #### Scenario: Dashboard shows risk distribution
 - **WHEN** a user views the observation dashboard
 - **THEN** each time period SHALL display the count of observations per risk_degree (low, medium, high)
+
+#### Scenario: Observer dashboard is self-scoped
+- **WHEN** a user without `observations.view_all` permission views the observation dashboard
+- **THEN** the statistics SHALL only reflect observations where `creator_id` matches the authenticated user

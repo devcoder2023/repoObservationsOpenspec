@@ -30,6 +30,7 @@ enum Permission: string
 
     // Observations
     case ObservationsView = 'observations.view';
+    case ObservationsViewAll = 'observations.view_all';
     case ObservationsCreate = 'observations.create';
     case ObservationsUpdate = 'observations.update';
     case ObservationsDelete = 'observations.delete';

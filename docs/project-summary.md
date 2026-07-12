@@ -244,7 +244,7 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 
 ### Role-Based Access Control (fully implemented)
 - **Spatie Laravel Permission** package integration
-- **20 permissions** across 5 resources: users, projects, sites, categories, observations (each with view/create/update/delete)
+- **21 permissions** across 5 resources: users, projects, sites, categories, observations (each with view/create/update/delete; observations also has `view_all`)
 - **5 predefined roles** with permission mappings:
   - `System Administrator`: all 20 permissions
   - `General Manager`: `observations.view` only
@@ -285,6 +285,7 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 - **Edit observation** at `/observations/{id}/edit` — pre-populated form; uploading image_after transitions status to Close (2); edit restricted to 48-hour window (server-enforced)
 - **Delete observation** with image cleanup from storage; also restricted to 48-hour window
 - **Dashboard** at `/observations/dashboard` — statistics cards for today, this week, this month, previous month with total/open/close counts and risk_degree distribution
+- **Observer self-scoping** — Observers only see their own observations in list, detail, dashboard, and on edit/delete actions; GM/PM/Analyst/Admin see all via `observations.view_all` permission
 - Images stored on `public` disk under `observations/Y/m/`; served via `/storage/` symlink
 - Routes defined in `routes/observations.php` behind `observations.*` permission middleware
 

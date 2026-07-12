@@ -52,6 +52,17 @@
 - Merged the user-account-status delta spec into `openspec/specs/auth/spec.md` as both relate to authentication concerns.
 - Model specifications by business capability rather than technical components.
 
+## 2026-07-12 — Observer Self-Scoping (observations.view_all)
+
+**Context:** The Observer role could see all observations in the system, including those created by other users. Business requirements dictate that Observers should only see their own observations.
+
+**Decisions:**
+- Add `observations.view_all` permission to distinguish users who can see all observations (GM, PM, Analyst, System Admin) from those who only see their own (Observer).
+- Grant `observations.view_all` to all roles except Observer, keeping Observer's existing `view`/`create`/`update`/`delete` permissions unchanged.
+- Apply self-scoping at the query level in the controller: `index()` and `dashboard/periodStats()` filter by `creator_id` when the user lacks `view_all`.
+- Apply access control at the action level for `show()`, `edit()`, `update()`, and `destroy()` via an `authorizeObservationAccess()` helper that checks `view_all` or `creator_id` match.
+- Total permissions increased from 20 to 21.
+
 ## 2026-07-11 — Observation CRUD, Dashboard, and Status Lifecycle
 
 **Context:** The core domain feature — image-based safety observations — had no implementation despite existing RBAC permissions (observations.view/create/update/delete), and the existing Observer role was unusable.

@@ -16,12 +16,15 @@ enum Role: string
             self::SystemAdministrator => Permission::all(),
             self::GeneralManager => [
                 Permission::ObservationsView,
+                Permission::ObservationsViewAll,
             ],
             self::ProjectManager => [
                 Permission::ObservationsView,
+                Permission::ObservationsViewAll,
             ],
             self::Analyst => [
                 Permission::ObservationsView,
+                Permission::ObservationsViewAll,
             ],
             self::Observer => [
                 Permission::ObservationsView,

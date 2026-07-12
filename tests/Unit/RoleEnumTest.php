@@ -17,28 +17,31 @@ test('roles have correct names', function () {
 test('system administrator has all permissions', function () {
     $permissions = Role::SystemAdministrator->permissions();
 
-    expect($permissions)->toHaveCount(20);
+    expect($permissions)->toHaveCount(21);
 });
 
-test('general manager has only observations.view', function () {
+test('general manager has observations.view and view_all', function () {
     $permissions = Role::GeneralManager->permissions();
 
-    expect($permissions)->toHaveCount(1);
-    expect($permissions[0]->value)->toBe('observations.view');
+    expect($permissions)->toHaveCount(2);
+    $values = array_map(fn ($p) => $p->value, $permissions);
+    expect($values)->toBe(['observations.view', 'observations.view_all']);
 });
 
-test('project manager has only observations.view', function () {
+test('project manager has observations.view and view_all', function () {
     $permissions = Role::ProjectManager->permissions();
 
-    expect($permissions)->toHaveCount(1);
-    expect($permissions[0]->value)->toBe('observations.view');
+    expect($permissions)->toHaveCount(2);
+    $values = array_map(fn ($p) => $p->value, $permissions);
+    expect($values)->toBe(['observations.view', 'observations.view_all']);
 });
 
-test('analyst has only observations.view', function () {
+test('analyst has observations.view and view_all', function () {
     $permissions = Role::Analyst->permissions();
 
-    expect($permissions)->toHaveCount(1);
-    expect($permissions[0]->value)->toBe('observations.view');
+    expect($permissions)->toHaveCount(2);
+    $values = array_map(fn ($p) => $p->value, $permissions);
+    expect($values)->toBe(['observations.view', 'observations.view_all']);
 });
 
 test('observer has all observation permissions', function () {

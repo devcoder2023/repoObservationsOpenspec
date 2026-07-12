@@ -6,7 +6,7 @@ return [
         'projects' => ['view', 'create', 'update', 'delete'],
         'sites' => ['view', 'create', 'update', 'delete'],
         'categories' => ['view', 'create', 'update', 'delete'],
-        'observations' => ['view', 'create', 'update', 'delete'],
+        'observations' => ['view', 'view_all', 'create', 'update', 'delete'],
     ],
 
     'master_data' => [

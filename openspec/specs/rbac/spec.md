@@ -74,43 +74,49 @@ The `System Administrator` role SHALL have every permission (`users.*`, `project
 - **WHEN** a user has the `System Administrator` role
 - **THEN** they SHALL pass authorization for any resource action
 
-### Requirement: General Manager has read-only observation access
-The `General Manager` role SHALL have only `observations.view` permission and any observation summary/dashboard/statistics permissions.
+### Requirement: General Manager has read-only observation access (all data)
+The `General Manager` role SHALL have `observations.view` and `observations.view_all` permissions, plus any observation summary/dashboard/statistics permissions.
 
 #### Scenario: General Manager observation access
 - **WHEN** a user has the `General Manager` role
-- **THEN** they SHALL be able to view observations
-- **THEN** they SHALL be able to view observation summaries, dashboards, and statistics
+- **THEN** they SHALL be able to view all observations across all users
+- **THEN** they SHALL be able to view observation summaries, dashboards, and statistics for all users
 - **THEN** they SHALL NOT be able to create, update, or delete observations
 - **THEN** they SHALL NOT have any permissions for `users`, `projects`, `locations`, or `categories`
 
-### Requirement: Project Manager has read-only observation access
-The `Project Manager` role SHALL have only `observations.view` permission and any observation summary/dashboard/statistics permissions.
+### Requirement: Project Manager has read-only observation access (all data)
+The `Project Manager` role SHALL have `observations.view` and `observations.view_all` permissions, plus any observation summary/dashboard/statistics permissions.
 
 #### Scenario: Project Manager observation access
 - **WHEN** a user has the `Project Manager` role
-- **THEN** they SHALL be able to view observations
-- **THEN** they SHALL be able to view observation summaries, dashboards, and statistics
+- **THEN** they SHALL be able to view all observations across all users
+- **THEN** they SHALL be able to view observation summaries, dashboards, and statistics for all users
 - **THEN** they SHALL NOT be able to create, update, or delete observations
 - **THEN** they SHALL NOT have any permissions for `users`, `projects`, `locations`, or `categories`
 
-### Requirement: Analyst has read-only observation access
-The `Analyst` role SHALL have only `observations.view` permission and any observation summary/dashboard/statistics permissions.
+### Requirement: Analyst has read-only observation access (all data)
+The `Analyst` role SHALL have `observations.view` and `observations.view_all` permissions, plus any observation summary/dashboard/statistics permissions.
 
 #### Scenario: Analyst observation access
 - **WHEN** a user has the `Analyst` role
-- **THEN** they SHALL be able to view observations
-- **THEN** they SHALL be able to view observation summaries, dashboards, and statistics
+- **THEN** they SHALL be able to view all observations across all users
+- **THEN** they SHALL be able to view observation summaries, dashboards, and statistics for all users
 - **THEN** they SHALL NOT be able to create, update, or delete observations
 - **THEN** they SHALL NOT have any permissions for `users`, `projects`, `locations`, or `categories`
 
-### Requirement: Observer has full observation CRUD
-The `Observer` role SHALL have all observation permissions: `observations.view`, `observations.create`, `observations.update`, `observations.delete`.
+### Requirement: Observer has self-scoped observation CRUD
+The `Observer` role SHALL have all observation permissions: `observations.view`, `observations.create`, `observations.update`, `observations.delete`. The Observer SHALL NOT have `observations.view_all`, meaning they can only see, edit, and delete their own observations.
 
-#### Scenario: Observer observation CRUD
+#### Scenario: Observer observation CRUD (self-scoped)
 - **WHEN** a user has the `Observer` role
-- **THEN** they SHALL be able to view, create, update, and delete observations
+- **THEN** they SHALL be able to create observations
+- **THEN** they SHALL be able to view, update, and delete only their own observations
+- **THEN** they SHALL NOT be able to view, update, or delete observations created by other users
 - **THEN** they SHALL NOT have any permissions for `users`, `projects`, `locations`, or `categories`
+
+#### Scenario: Observer dashboard is self-scoped
+- **WHEN** an Observer views the observation dashboard
+- **THEN** the statistics SHALL only reflect their own observations
 
 ### Requirement: Observer edit/delete respects existing business rules
 The `Observer` role's `observations.update` and `observations.delete` permissions SHALL still be subject to any existing business rules (e.g., time restrictions on editing or deleting observations).
@@ -159,18 +165,18 @@ Define all system permissions using a consistent naming convention, ensure they 
 ### Requirement: Permission naming convention
 All permissions SHALL follow the `resource.action` naming convention using lowercase singular.
 Valid resources: `users`, `projects`, `sites`, `categories`, `observations`.
-Valid actions: `view`, `create`, `update`, `delete`.
+Valid actions: `view`, `view_all`, `create`, `update`, `delete`.
 
 #### Scenario: Permission name format
 - **WHEN** a permission is created
 - **THEN** its name SHALL match the pattern `resource.action` (e.g., `users.view`, `observations.create`)
 
 ### Requirement: Complete permission set
-The system SHALL define exactly 20 permissions covering 5 resources with 4 actions each.
+The system SHALL define exactly 21 permissions covering 5 resources. Observations have 5 actions (`view`, `view_all`, `create`, `update`, `delete`); all other resources have 4 actions.
 
 #### Scenario: All permissions exist after seeding
 - **WHEN** the role and permission seeder runs
-- **THEN** the following permissions SHALL exist in the database: `users.view`, `users.create`, `users.update`, `users.delete`, `projects.view`, `projects.create`, `projects.update`, `projects.delete`, `sites.view`, `sites.create`, `sites.update`, `sites.delete`, `categories.view`, `categories.create`, `categories.update`, `categories.delete`, `observations.view`, `observations.create`, `observations.update`, `observations.delete`
+- **THEN** the following 21 permissions SHALL exist in the database: `users.view`, `users.create`, `users.update`, `users.delete`, `projects.view`, `projects.create`, `projects.update`, `projects.delete`, `sites.view`, `sites.create`, `sites.update`, `sites.delete`, `categories.view`, `categories.create`, `categories.update`, `categories.delete`, `observations.view`, `observations.view_all`, `observations.create`, `observations.update`, `observations.delete`
 
 ### Requirement: Permission seeding is idempotent
 Running the seeder multiple times SHALL NOT create duplicate permissions.

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ObservationStatus;
+use App\Enums\Permission;
 use App\Http\Requests\Observation\StoreObservationRequest;
 use App\Http\Requests\Observation\UpdateObservationRequest;
 use App\Models\Observation;
 use App\Models\ObservationCategory;
 use App\Models\Project;
 use App\Models\Site;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,6 +24,7 @@ class ObservationController extends Controller
     public function index(Request $request): Response
     {
         $query = Observation::with(['project', 'site', 'category', 'creator']);
+        $this->applyCreatorScope($query, $request->user());
 
         if ($request->filled('project_id')) {
             $query->where('project_id', $request->project_id);
@@ -92,8 +95,9 @@ class ObservationController extends Controller
         return to_route('observations.index');
     }
 
-    public function show(Observation $observation): Response
+    public function show(Request $request, Observation $observation): Response
     {
+        $this->authorizeObservationAccess($request->user(), $observation);
         $observation->load(['project', 'site', 'category', 'creator']);
 
         return Inertia::render('observations/show', [
@@ -101,8 +105,9 @@ class ObservationController extends Controller
         ]);
     }
 
-    public function edit(Observation $observation): Response
+    public function edit(Request $request, Observation $observation): Response
     {
+        $this->authorizeObservationAccess($request->user(), $observation);
         if ($observation->created_at->lt(Carbon::now()->subHours(48))) {
             abort(403, 'Observation can only be edited within 2 days of creation.');
         }
@@ -117,6 +122,7 @@ class ObservationController extends Controller
 
     public function update(UpdateObservationRequest $request, Observation $observation): RedirectResponse
     {
+        $this->authorizeObservationAccess($request->user(), $observation);
         $request->ensureWithinTimeWindow();
 
         $data = $request->validated();
@@ -145,8 +151,9 @@ class ObservationController extends Controller
         return to_route('observations.index');
     }
 
-    public function destroy(Observation $observation): RedirectResponse
+    public function destroy(Request $request, Observation $observation): RedirectResponse
     {
+        $this->authorizeObservationAccess($request->user(), $observation);
         if ($observation->created_at->lt(Carbon::now()->subHours(48))) {
             abort(403, 'Observation can only be deleted within 2 days of creation.');
         }
@@ -165,8 +172,9 @@ class ObservationController extends Controller
         return to_route('observations.index');
     }
 
-    public function dashboard(): Response
+    public function dashboard(Request $request): Response
     {
+        $user = $request->user();
         $now = Carbon::now();
 
         $today = clone $now;
@@ -176,10 +184,10 @@ class ObservationController extends Controller
         $prevMonthEnd = (clone $now)->subMonth()->endOfMonth();
 
         $stats = [
-            'today' => $this->periodStats(clone $today->startOfDay(), clone $today->copy()->endOfDay()),
-            'week' => $this->periodStats(clone $weekStart, clone $now),
-            'month' => $this->periodStats(clone $monthStart, clone $now),
-            'previous_month' => $this->periodStats(clone $prevMonthStart, clone $prevMonthEnd),
+            'today' => $this->periodStats(clone $today->startOfDay(), clone $today->copy()->endOfDay(), $user),
+            'week' => $this->periodStats(clone $weekStart, clone $now, $user),
+            'month' => $this->periodStats(clone $monthStart, clone $now, $user),
+            'previous_month' => $this->periodStats(clone $prevMonthStart, clone $prevMonthEnd, $user),
         ];
 
         return Inertia::render('observations/dashboard', [
@@ -197,9 +205,10 @@ class ObservationController extends Controller
     }
 
     /** @return array{total: int, open: int, closed: int, risk_distribution: array{1: int, 2: int, 3: int}} */
-    private function periodStats(Carbon $start, Carbon $end): array
+    private function periodStats(Carbon $start, Carbon $end, ?User $user): array
     {
         $query = Observation::whereBetween('created_at', [$start, $end]);
+        $this->applyCreatorScope($query, $user);
 
         $total = (clone $query)->count();
         $open = (clone $query)->where('status', ObservationStatus::Open)->count();
@@ -220,5 +229,19 @@ class ObservationController extends Controller
                 3 => $riskDistribution->get(3, 0),
             ],
         ];
+    }
+
+    private function applyCreatorScope($query, ?User $user): void
+    {
+        if ($user && ! $user->can(Permission::ObservationsViewAll)) {
+            $query->where('creator_id', $user->id);
+        }
+    }
+
+    private function authorizeObservationAccess(User $user, Observation $observation): void
+    {
+        if (! $user->can(Permission::ObservationsViewAll) && $observation->creator_id !== $user->id) {
+            abort(403, 'You can only access your own observations.');
+        }
     }
 }
