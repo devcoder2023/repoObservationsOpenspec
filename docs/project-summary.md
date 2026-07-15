@@ -4,7 +4,7 @@
 
 A web application for creating, managing, and reviewing image-based safety observations. Users can upload images, annotate them with notes, specify sites, categories and status, while supervisors review and manage observations.
 
-**Current status:** The application has been extended beyond the Laravel scaffold with four implemented feature sets: (1) user account status system (Active/Inactive/Suspended) with registration-as-inactive flow and middleware-based access gating, (2) full Role-Based Access Control (RBAC) using Spatie Laravel Permission with 5 roles and 20 permissions, (3) an admin dashboard with complete CRUD for users and master data (projects, sites, observation categories), and (4) a complete Observation CRUD system with image upload, status lifecycle, and a statistics dashboard.
+**Current status:** The application has been extended beyond the Laravel scaffold with five implemented feature sets: (1) user account status system (Active/Inactive/Suspended) with registration-as-inactive flow and middleware-based access gating, (2) full Role-Based Access Control (RBAC) using Spatie Laravel Permission with 5 roles and 21 permissions, (3) an admin dashboard with complete CRUD for users and master data (projects, sites, observation categories), (4) a complete Observation CRUD system with image upload, status lifecycle, and a statistics dashboard, and (5) an analyst dashboard with dedicated analytics pages (Trends, Current Month, All Observations) for users with `observations.view_all` permission, featuring interactive charts, month drill-down, and period filtering.
 
 ## Technology Stack
 
@@ -74,6 +74,7 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   │   │   │   ├── SiteController.php
 │   │   │   │   └── ObservationCategoryController.php
 │   │   │   ├── ObservationController.php  # Full CRUD + dashboard + sitesByProject
+│   │   │   └── AnalystController.php   # Trends, current month, observation browser analytics
 │   │   │   └── Settings/         # Settings controllers (Profile, Security)
 │   │   ├── Middleware/
 │   │   │   ├── CheckUserStatus.php    # Blocks inactive/suspended users
@@ -110,6 +111,8 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   │   ├── 2026_07_09_000003_create_observation_categories_table.php
 │   │   ├── 2026_07_11_000001_rename_locations_table_to_sites.php
 │   │   └── 2026_07_11_010000_create_observations_table.php
+│   │   └── 2026_07_14_100000_add_analyst_indexes.php
+│   │       # Adds indexes on observations.created_at and observations.creator_id
 │   └── seeders/
 │       ├── DatabaseSeeder.php
 │       └── RoleAndPermissionSeeder.php
@@ -120,14 +123,16 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   ├── changes/                  # Active/archived changes
 │   │   └── archive/              # 4 archived changes
 │   ├── specs/                    # Canonical specifications
-│   │   ├── auth/spec.md          # Auth + user account status
+│   │   ├── auth/spec.md          # Authentication + user account status
 │   │   ├── rbac/spec.md          # RBAC (permissions, roles, authorization)
 │   │   ├── admin-dashboard/spec.md # Admin dashboard + user mgmt + master data
-│   │   └── observations/spec.md  # Observation CRUD, status lifecycle, dashboard
+│   │   ├── observations/spec.md  # Observation CRUD, status lifecycle, dashboard
+│   │   └── analyst-dashboard/spec.md # Analyst trends, current month, observation browser
 │   └── config.yaml
 ├── resources/
 │   └── js/                       # React SPA frontend
 │       ├── components/
+│       │   ├── charts/           # Recharts wrapper components: BarChart, LineChart, PieChart, DoughnutChart, StackedBarChart, SemiCircleGauge
 │       │   └── ui/               # Radix UI wrapper components
 │       ├── hooks/
 │       ├── layouts/
@@ -139,6 +144,10 @@ A web application for creating, managing, and reviewing image-based safety obser
 │       │   │   ├── projects/index.tsx, create.tsx, edit.tsx
 │   │   │   ├── sites/index.tsx, create.tsx, edit.tsx
 │       │   │   └── categories/index.tsx, create.tsx, edit.tsx
+│       │   ├── analyst/
+│       │   │   ├── trends.tsx
+│       │   │   ├── current-month.tsx
+│       │   │   └── observations/index.tsx
 │       │   ├── auth/
 │       │   └── settings/
 │       ├── routes/
@@ -147,6 +156,7 @@ A web application for creating, managing, and reviewing image-based safety obser
 │   ├── web.php                   # Requires admin.php, observations.php, defines main routes
 │   ├── admin.php                 # Admin routes (dashboard, users, projects, sites, categories)
 │   ├── observations.php          # 9 observation routes (index, create, store, show, edit, update, destroy, dashboard, sitesByProject)
+│   ├── analyst.php               # 3 analyst routes (trends, current-month, observations)
 │   └── settings.php
 ├── tests/
 │   ├── Feature/
@@ -289,11 +299,21 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 - Images stored on `public` disk under `observations/Y/m/`; served via `/storage/` symlink
 - Routes defined in `routes/observations.php` behind `observations.*` permission middleware
 
+### Analyst Dashboard (fully implemented)
+- Three dedicated analytics pages at `/analyst/*`, gated by `observations.view_all` permission
+- **Trends page** at `/analyst/trends` — 12-month line chart with clickable data points for month drill-down; stacked column chart of observations per site (Open/Closed); column chart of top 5 categories; semi-circle gauge of closed percentage; ordered observer ranking
+- **Current Month page** at `/analyst/current-month` — period selector cards (Today, This Week starting Saturday, Month to Date); stacked column charts for sites and categories with Open/Closed segments; semi-circle gauge for overall closed rate; pie chart for risk severity distribution; observer ranking; clickable site bars reveal category breakdown per site
+- **Observation Browser** at `/analyst/observations` — paginated list (50/page) with filters including project, site, category, shift, risk_degree, status, date range, observer, and text search; shows all observations without observer self-scoping
+- Reusable chart components: BarChartCard, LineChartCard, PieChartCard, DoughnutChartCard, StackedBarChartCard, SemiCircleGauge
+- Charts use Recharts library with consistent color scheme (dark indigo `#6366f1` for closed/primary, light indigo `#e0e7ff` for open/background)
+- "Analytics" sidebar section rendered only for users with `observations.view_all` permission
+
 ### Pages
 - Welcome/landing page (`/`)
 - Dashboard (`/dashboard`) — authenticated, verified, active users only
 - Admin pages (`/admin/*`) — System Administrator only
 - Observation pages (`/observations/*`) — users with `observations.view` permission
+- Analyst pages (`/analyst/*`) — users with `observations.view_all` permission
 - Auth pages (login, register, forgot/reset password, verify email, confirm password)
 - Settings pages (profile, security, appearance)
 
@@ -326,7 +346,7 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 
 ## Notable Observations
 
-1. **Four feature sets implemented** — User account status, RBAC with Spatie, admin dashboard with user management and master data CRUD, and Observation CRUD with dashboard are all fully implemented.
+1. **Five feature sets implemented** — User account status, RBAC with Spatie, admin dashboard with user management and master data CRUD, Observation CRUD with dashboard, and Analyst Dashboard with interactive analytics pages are all fully implemented.
 
 2. **Enum-driven design** — Roles, permissions, user status, and observation enums all use PHP backed enums with logic rather than database-driven configuration. Observation enums (shift, risk_degree, status) are int-backed for database efficiency.
 
@@ -334,11 +354,11 @@ The `UserStatus` enum (`App\Enums\UserStatus`) defines three states:
 
 4. **Specs consolidated** — The RBAC change initially produced 3 separate delta specs (authorization, permissions, roles) which were consolidated into a single `openspec/specs/rbac/spec.md` file. The auth spec was also merged with the user-account-status delta spec.
 
-5. **Canonical specs in `openspec/specs/`** — Four specification files exist: `auth/spec.md` (authentication + user status), `rbac/spec.md` (permissions, roles, authorization), `admin-dashboard/spec.md` (dashboard, user management, master data), and `observations/spec.md` (observation CRUD, status lifecycle, dashboard).
+5. **Canonical specs in `openspec/specs/`** — Five specification files exist: `auth/spec.md` (authentication + user status), `rbac/spec.md` (permissions, roles, authorization), `admin-dashboard/spec.md` (dashboard, user management, master data), `observations/spec.md` (observation CRUD, status lifecycle, dashboard), and `analyst-dashboard/spec.md` (analyst trends, current month, observation browser).
 
 6. **Admin sidebar is permission-gated** — The "Administration" navigation group in the sidebar renders only for users with the System Administrator role, using Inertia-shared permission data.
 
-7. **Observations sidebar is permission-gated** — The "Observations" navigation group (Dashboard, All Observations, Create) renders for users with `observations.view` permission.
+7. **Observations sidebar is permission-gated** — The "Observations" navigation group (Dashboard, All Observations, Create) renders for users with `observations.view` permission. The "Analytics" navigation group (Trends, Current Month, All Observations) renders for users with `observations.view_all` permission.
 
 8. **Soft deletes for master data** — Projects, sites, and observation categories all use soft deletes with a restore action, preventing accidental data loss.
 

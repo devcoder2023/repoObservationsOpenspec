@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Users, FolderKanban, MapPin, Tags, Shield, ClipboardCheck, BarChart3, PlusCircle } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, Users, FolderKanban, MapPin, Tags, Shield, ClipboardCheck, BarChart3, PlusCircle, TrendingUp, Calendar, Search } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -39,6 +39,24 @@ const observationNavItems: NavItem[] = [
         title: 'Create Observation',
         href: '/observations/create',
         icon: PlusCircle,
+    },
+];
+
+const analystNavItems: NavItem[] = [
+    {
+        title: 'Trends',
+        href: '/analyst/trends',
+        icon: TrendingUp,
+    },
+    {
+        title: 'Current Month',
+        href: '/analyst/current-month',
+        icon: Calendar,
+    },
+    {
+        title: 'All Observations',
+        href: '/analyst/observations',
+        icon: Search,
     },
 ];
 
@@ -86,6 +104,7 @@ const footerNavItems: NavItem[] = [
 export function AppSidebar() {
     const { auth } = usePage<{ auth: Auth }>().props;
     const isAdmin = auth.permissions.includes('users.view');
+    const canViewAnalytics = auth.permissions.includes('observations.view_all');
 
     const canViewObservations = auth.permissions.includes('observations.view');
 
@@ -108,6 +127,10 @@ export function AppSidebar() {
 
                 {canViewObservations && (
                     <NavMain items={observationNavItems} label="Observations" />
+                )}
+
+                {canViewAnalytics && (
+                    <NavMain items={analystNavItems} label="Analytics" />
                 )}
 
                 {isAdmin && (

@@ -92,3 +92,21 @@
 - Load project relationship eagerly (`->with('project')`) on site index queries to avoid N+1.
 - Expose full projects list in site create/edit views so the admin can select from active projects.
 - Seed sample data with 3 projects × 2 sites each to demonstrate the relationship.
+
+## 2026-07-14 — Analyst Dashboard (Trends, Current Month, Observation Browser)
+
+**Context:** The general statistics dashboard at `/observations/dashboard` provided Observer-scoped stats, but Analysts with `observations.view_all` needed dedicated analytics pages with richer visualizations and no observer self-scoping.
+
+**Decisions:**
+- Create a dedicated `AnalystController` with `trends()`, `currentMonth()`, and `index()` methods rather than modifying existing ObservationController — keeps analyst-specific logic separate from observation CRUD.
+- Use `DB::table('observations')` for aggregate queries instead of Eloquent — raw aggregate queries are more efficient and the data is read-only.
+- Define analyst routes in a separate `routes/analyst.php` file (included from `web.php`) behind `auth`, `verified`, `CheckUserStatus`, and `permission:observations.view_all` middleware.
+- Use Recharts for all chart components rather than a higher-level charting library — integrates well with React, has good TypeScript support, and provides the required chart types (LineChart, BarChart, PieChart, semi-circle gauge).
+- Create reusable chart wrapper components (BarChartCard, LineChartCard, PieChartCard, DoughnutChartCard, StackedBarChartCard, SemiCircleGauge) to avoid duplicating Card/ResponsiveContainer boilerplate.
+- Use a custom `SemiCircleGauge` component built on `PieChart` with `startAngle=180, endAngle=0` — Recharts doesn't have a native gauge, but a half-donut pie accomplishes the same visual.
+- Trends page defaults to showing aggregated data across all 12 months, with clickable line-chart dots for per-month drill-down — this gives analysts an immediate overview without requiring interaction.
+- Current month page provides period cards (Today, This Week starting Saturday, Month to Date) with click-to-filter — week starts on Saturday per business requirements.
+- Attach onClick directly to Bar and Line dot elements rather than relying on chart-level activePayload events — more reliable across Recharts versions.
+- Color scheme: dark indigo (`#6366f1`) for closed/primary, light indigo (`#e0e7ff`) for open/background — consistent across all charts and the semi-circle gauge.
+- Stacked bar charts place Closed on bottom and Open on top — the closed/accomplished portion is the stable baseline.
+- Add database indexes on `observations.created_at` and `observations.creator_id` to optimize the aggregate GROUP BY and JOIN queries used by the analyst controller.

@@ -16,4 +16,8 @@ Route::middleware(['auth', 'verified', 'user.status', 'permission:observations.v
     require __DIR__.'/observations.php';
 });
 
+Route::middleware(['auth', 'verified', 'user.status', 'permission:observations.view_all'])->prefix('analyst')->name('analyst.')->group(function () {
+    require __DIR__.'/analyst.php';
+});
+
 require __DIR__.'/settings.php';
